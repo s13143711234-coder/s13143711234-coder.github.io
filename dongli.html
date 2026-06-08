@@ -229,7 +229,7 @@ function chgSpan(p,label,suffix){
     grid:{left:50,right:52,top:48,bottom:54},
     xAxis:{type:'category',data:EM,axisLine:axL,axisLabel:{...axT,hideOverlap:true}},
     yAxis:[{type:'value',name:'万辆',scale:true,splitLine:splL,axisLabel:axT,nameTextStyle:{color:'#5d7aa6',align:'right'},nameGap:8},
-           {type:'value',name:'BEV渗透率%',min:0,max:100,position:'right',splitLine:{show:false},axisLabel:{...axT,formatter:'{value}%'},nameTextStyle:{color:'#5d7aa6',align:'left'},nameGap:8}],
+           {type:'value',name:'BEV渗透率%',min:50,max:100,position:'right',splitLine:{show:false},axisLabel:{...axT,formatter:'{value}%'},nameTextStyle:{color:'#5d7aa6',align:'left'},nameGap:8}],
     dataZoom:[{type:'inside'},{type:'slider',height:16,bottom:8,borderColor:'#cfe0f5',textStyle:{color:'#5d7aa6'},fillerColor:'rgba(31,111,235,.12)'}],
     series:[{name:'BEV',type:'bar',stack:'eu',data:EUROPE.bev,itemStyle:{color:'#1f6feb'}},
             {name:'PHEV',type:'bar',stack:'eu',data:EUROPE.phev,itemStyle:{color:'#8957e5'}},
