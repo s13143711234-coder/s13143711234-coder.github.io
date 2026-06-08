@@ -30,7 +30,7 @@
   .kpi .val{font-size:24px;font-weight:700;margin-top:7px}
   .kpi .unit{font-size:12.5px;color:var(--sub);font-weight:400;margin-left:4px}
   .kpi .chg{font-size:12px;margin-top:6px}
-  .up{color:#1f9d55}.down{color:#e5484d}
+  .up{color:#e5484d}.down{color:#1f9d55}
   .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(500px,1fr));gap:18px;margin-top:12px}
   .card{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:18px 20px 8px;box-shadow:0 4px 16px rgba(31,111,235,.07)}
   .card h2{font-size:16px;font-weight:600;margin-bottom:2px}
@@ -59,32 +59,38 @@
 <!-- ============ TAB 1: 动力需求 ============ -->
 <section id="tab-dongli" class="tabpane active">
   <div class="meta">
-    数据区间：<b id="range"></b>&nbsp;·&nbsp;频率：月度&nbsp;·&nbsp;来源：乘联会 / 中汽协 / 新闻整理（带电量）<br>
-    乘用车=零售口径，商用车=销量口径；商用车渗透率＝新能源商用车÷商用车总量，累计同比为月度累加测算。
+    数据区间：<b id="range"></b>&nbsp;·&nbsp;频率：月度&nbsp;·&nbsp;来源：乘联会 / 中汽协 / 新闻整理（带电量）/ 欧洲为各国行业协会汇总<br>
+    国内乘用车=零售口径，商用车=销量口径；商用车渗透率＝新能源商用车÷商用车总量，累计同比为月度累加测算。欧洲为 BEV+PHEV 合计销量（数据起 2024-01）。
   </div>
   <div class="kpis" id="kpis"></div>
-  <div class="sec green">一、新能源乘用车</div>
+  <div class="sec green">一、国内新能源乘用车</div>
   <div class="grid">
     <div class="card"><h2>零售销量</h2><div class="ch">单位：万辆 · 各年同期对比</div><div id="pv1" class="chart"></div></div>
     <div class="card"><h2>零售渗透率</h2><div class="ch">单位：% · 各年同期对比</div><div id="pv2" class="chart"></div></div>
     <div class="card full"><h2>当月同比 & 累计同比</h2><div class="ch">单位：% · 连续时间轴</div><div id="pv3" class="chart"></div></div>
   </div>
-  <div class="sec">二、新能源商用车</div>
+  <div class="sec">二、国内新能源商用车</div>
   <div class="grid">
     <div class="card"><h2>销量</h2><div class="ch">单位：万辆 · 各年同期对比</div><div id="cv1" class="chart"></div></div>
     <div class="card"><h2>渗透率（测算）</h2><div class="ch">单位：% · 新能源商用车÷商用车总量 · 各年同期对比</div><div id="cv2" class="chart"></div></div>
     <div class="card full"><h2>当月同比 & 累计同比（测算）</h2><div class="ch">单位：% · 连续时间轴</div><div id="cv3" class="chart"></div></div>
   </div>
-  <div class="sec gold">三、单车平均带电量</div>
+  <div class="sec gold">三、国内单车平均带电量</div>
   <div class="grid">
     <div class="card"><h2>乘用车（纯电 / 插混）</h2><div class="ch">单位：kWh/台 · 连续时间轴</div><div id="bat1" class="chart"></div></div>
     <div class="card"><h2>商用车（客车 / 专用车）</h2><div class="ch">单位：kWh/台 · 连续时间轴</div><div id="bat2" class="chart"></div></div>
   </div>
-  <div class="sec red">四、动力电池装车量</div>
+  <div class="sec red">四、国内动力电池装车量</div>
   <div class="grid">
     <div class="card full"><h2>动力电池装车量</h2><div class="ch">单位：GWh · 各年同期对比</div><div id="batt" class="chart"></div></div>
   </div>
-  <div class="sec">五、明细数据</div>
+  <div class="sec" style="border-color:#8957e5">五、欧洲新能源车</div>
+  <div class="grid">
+    <div class="card"><h2>新能源车销量（BEV / PHEV / 合计）</h2><div class="ch">单位：万辆 · 连续时间轴</div><div id="eu1" class="chart"></div></div>
+    <div class="card"><h2>合计销量</h2><div class="ch">单位：万辆 · 各年同期对比</div><div id="eu2" class="chart"></div></div>
+    <div class="card full"><h2>当月同比 & 累计同比</h2><div class="ch">单位：% · 连续时间轴（2025 年起有同比）</div><div id="eu3" class="chart"></div></div>
+  </div>
+  <div class="sec">六、明细数据</div>
   <div class="grid">
     <div class="card full"><div class="ch">最新月份在最上方 · 共 <span id="rowcount"></span> 个月（横向可滑动）</div>
       <div class="tablewrap"><table id="datatable"></table></div></div>
@@ -144,6 +150,7 @@ const DATA = [{"ym":"2021-01","year":2021,"month":1,"nevPv":15.5388,"nevPvPen":6
 const PRICE = {"dates":["2020-08","2020-09","2020-10","2020-11","2020-12","2021-01","2021-02","2021-03","2021-04","2021-05","2021-06","2021-07","2021-08","2021-09","2021-10","2021-11","2021-12","2022-01","2022-02","2022-03","2022-04","2022-05","2022-06","2022-07","2022-08","2022-09","2022-10","2022-11","2022-12","2023-01","2023-02","2023-03","2023-04","2023-05","2023-06","2023-07","2023-08","2023-09","2023-10","2023-11","2023-12","2024-01","2024-02","2024-03","2024-04","2024-05","2024-06","2024-07","2024-08","2024-09","2024-10","2024-11","2024-12","2025-01","2025-02","2025-03","2025-04","2025-05","2025-06","2025-07","2025-08","2025-09","2025-10","2025-11","2025-12","2026-01","2026-02","2026-03","2026-04","2026-05"],"groups":[{"title":"磷酸铁锂","unit":"万元/吨","series":[{"name":"动力型","data":[3.49,3.4,3.4,3.5,3.68,4.14,4.38,4.83,4.898,5.07,5.25,5.366,5.45,6.75,8.41,8.7,9.47,12.55,14.77,16.7,16.48,15.6,15.5,15.5,15.51,15.91,16.65,17.57,17.08,15.57,14.34,11.76,7.83,8.69,9.83,9.53,8.37,6.85,6.32,5.77,4.75,4.37,4.35,4.4,4.39,4.25,4.11,3.88,3.57,3.29,3.31,3.39,3.38,3.37,3.37,3.37,3.33,3.19,3.04,3.1,3.38,3.43,3.41,3.67,4.05,5.22,5.25,5.39,5.6,6.35],"isHeadline":true},{"name":"储能型","data":[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,16.3,16.08,15.16,14.98,14.92,14.94,15.33,16.17,17.12,16.63,15.17,13.94,11.36,7.45,8.34,9.48,9.18,8.04,6.65,5.99,5.4,4.35,3.97,3.95,4,3.99,4.02,3.96,3.74,3.44,3.25,3.25,3.33,3.32,3.31,3.31,3.31,3.25,3.05,2.88,2.96,3.23,3.29,3.28,3.54,3.89,5.17,5.23,5.37,5.58,6.34],"isHeadline":false}]},{"title":"负极材料","unit":"万元/吨","series":[{"name":"人造石墨(高端)","data":[6.89,6.89,6.89,6.89,6.89,6.89,6.75,6.75,6.75,6.75,6.75,6.75,6.75,6.75,6.85,7.02,7.15,7.15,7.15,7.15,7.15,7.15,7.15,7.15,7.15,7.15,6.65,6.65,6.5,6.25,6.15,5.96,5.4,5.35,5.12,5.1,5.1,5.1,5.1,5.1,5.1,5.04,4.85,4.85,4.85,4.85,4.85,4.85,4.85,4.85,4.85,4.85,4.85,4.85,4.85,4.85,4.85,4.85,4.85,4.83,4.83,4.83,4.83,4.83,4.83,4.83,4.83,4.83,4.83,4.83],"isHeadline":true},{"name":"人造石墨(中端)","data":[3.85,3.85,3.85,3.85,3.85,3.85,3.75,3.75,4.05,4.15,4.15,4.15,4.15,4.15,4.6,4.89,5.15,5.15,5.15,5.15,5.23,5.3,5.3,5.3,5.3,5.3,5,5,4.85,4.6,4.48,4.17,3.78,3.74,3.47,3.45,3.45,3.45,3.45,3.45,3.36,3.24,3.05,3.05,3.05,3.05,3.05,3.05,3.05,3.05,3.05,3.05,3.05,3.05,3.05,3.05,3.05,3.05,3.05,3.17,3.17,3.17,3.17,3.17,3.17,3.17,3.17,3.17,3.17,2.92],"isHeadline":false},{"name":"天然石墨(高端)","data":[5.64,5.64,5.64,5.64,5.64,5.64,5.55,5.55,5.55,5.55,5.55,5.55,5.55,5.55,5.55,5.55,5.55,5.55,5.55,5.69,6.1,6.1,6.1,6.1,6.1,6.1,6.1,6.1,6.1,6.1,6.1,6.1,5.97,5.95,5.95,5.95,5.95,5.95,5.95,5.95,5.95,5.9,5.75,5.75,5.75,5.75,5.75,5.75,5.75,5.75,5.75,5.65,5.75,5.75,5.75,5.75,5.75,5.75,5.75,5.75,5.75,5.75,5.75,5.75,5.75,5.75,5.75,5.75,5.75,5.75],"isHeadline":false},{"name":"天然石墨(中端)","data":[3.68,3.68,3.68,3.68,3.68,3.68,3.6,3.6,3.6,3.6,3.6,3.6,3.6,3.6,3.6,3.6,3.6,3.6,3.6,4.18,5.1,5.1,5.1,5.1,5.1,5.1,5.1,5.1,5.1,4.94,4.9,4.9,4.54,4.5,4.23,4.2,4.2,4.2,4.2,4.2,4.2,4.12,3.85,3.85,3.75,3.7,3.7,3.7,3.7,3.7,3.7,3.37,3.7,3.7,3.7,3.7,3.7,3.7,3.7,3.7,3.7,3.7,3.7,3.7,3.7,3.7,3.7,3.7,3.7,3.7],"isHeadline":false}]},{"title":"湿法隔膜","unit":"元/㎡","series":[{"name":"7μm湿法基膜","data":[2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,1.92,1.9,1.9,1.9,1.9,1.9,1.86,1.64,1.55,1.55,1.55,1.55,1.5,1.45,1.29,1.23,1.15,1.08,0.98,0.93,0.93,0.88,0.84,0.84,0.84,0.84,0.94,0.84,0.76,0.75,0.75,0.75,0.75,0.7,0.68,0.68,0.7,0.72,0.75,0.78,0.81,0.81,0.81,0.82,0.82],"isHeadline":true},{"name":"9μm湿法基膜","data":[1.3,1.21,1.2,1.2,1.2,1.2,1.2,1.2,1.2,1.2,1.2,1.2,1.2,1.2,1.29,1.3,1.31,1.35,1.38,1.43,1.44,1.48,1.48,1.48,1.48,1.45,1.45,1.45,1.45,1.45,1.45,1.43,1.36,1.35,1.35,1.35,1.35,1.3,1.27,1.18,1.13,1.05,0.98,0.92,0.9,0.91,0.985,0.81,0.81,0.81,0.81,0.925,0.81,0.76,0.75,0.75,0.75,0.75,0.71,0.69,0.69,0.71,0.74,0.76,0.79,0.83,0.83,0.84,0.87,0.88],"isHeadline":false},{"name":"7+2陶瓷涂覆","data":[2.4,2.4,2.4,2.4,2.4,2.4,2.4,2.4,2.4,2.4,2.4,2.4,2.4,2.4,2.4,2.5,2.6,2.6,2.6,2.6,2.6,2.6,2.6,2.6,2.6,2.48,2.45,2.45,2.45,2.45,2.43,2.31,2.06,1.9,1.9,1.9,1.9,1.85,1.8,1.67,1.59,1.43,1.35,1.25,1.18,1.18,1.1,1.15,1.02,1.03,1.03,1.15,1.03,0.95,0.94,0.94,0.94,0.94,0.9,0.88,0.88,0.9,0.95,0.97,1.03,1.06,1.06,1.06,1.07,1.07],"isHeadline":false},{"name":"9+3陶瓷涂覆","data":[2.1,1.97,1.95,1.95,1.95,1.95,1.95,1.95,1.95,1.95,1.95,1.95,1.95,1.95,1.95,2.04,2.11,2.15,2.16,2.18,2.18,2.18,2.18,2.18,2.18,2.15,2.15,2.15,2.15,2.15,2.13,2.01,1.84,1.75,1.75,1.75,1.75,1.7,1.67,1.53,1.45,1.33,1.25,1.19,1.15,1.15,1.08,0.98,0.98,0.98,0.98,0.91,0.98,0.94,0.94,0.94,0.94,0.94,0.91,0.89,0.89,0.91,0.96,0.98,1.04,1.08,1.08,1.09,1.12,1.13],"isHeadline":false}]},{"title":"电解液","unit":"万元/吨","series":[{"name":"三元","data":[3.3,3.43,3.74,3.8,3.8,3.8,3.85,5.04,5.5,5.77,7.49,7.5,9.5,9.875,11.78,12.15,12.15,12.15,12.15,11.92,11.09,10.75,9.37,7.42,7.25,7.26,7.34,7.33,6.72,6.25,5.86,5.35,4.35,3.99,4.12,4,3.79,3.56,3.11,2.96,2.73,2.51,2.47,2.34,2.38,2.36,2.06,1.99,1.96,1.93,1.97,1.97,2.01,2.01,2.01,2,1.99,1.96,1.94,1.84,1.73,1.75,1.83,2.09,2.52,3.15,2.97,2.8,2.68,2.63],"isHeadline":false},{"name":"锰酸锂","data":[1.95,2.28,2.9,2.9,2.9,2.9,2.97,3.59,3.7,3.79,4.3,4.3,5.5,6.33,7.71,8.08,8.08,8.08,8.08,7.79,7.03,6.78,6.21,5.1,5,5.01,5.11,5.1,4.59,4.04,3.79,3.42,2.57,2.4,2.62,2.46,2.24,2.14,1.99,1.91,1.78,1.61,1.58,1.53,1.55,1.53,1.31,1.24,1.21,1.18,1.21,1.23,1.25,1.26,1.26,1.24,1.23,1.21,1.2,1.14,1.1,1.12,1.18,1.42,1.91,2.68,2.52,2.39,2.27,2.19],"isHeadline":false},{"name":"磷酸铁锂","data":[3,3.34,3.93,4,4,4,4.09,5.93,6.45,6.55,7.467,7.5,9.5,9.775,10.82,11.03,11.03,11.03,11.03,10.7,9.56,8.83,7.37,6.32,6.25,6.26,6.36,6.34,5.59,5.15,4.73,4.17,3.19,2.98,3.22,3.07,2.78,2.62,2.4,2.31,2.06,1.86,1.85,1.85,1.87,1.85,1.57,1.84,1.79,1.76,1.8,1.71,1.85,1.85,1.85,1.84,1.83,1.8,1.78,1.72,1.65,1.67,1.75,2.01,2.45,3.21,3.07,2.92,2.78,2.65],"isHeadline":true}]},{"title":"六氟磷酸锂","unit":"万元/吨","series":[{"name":"国产","data":[6.95,7.6,8.73,9.15,12.09,12.09,14.77,19.7,21.071,26.21,31.214,38.5,41.82,45,50.47,54.32,56.5,58.61,58.61,53.26,42.63,31.63,25.25,25.5,26.79,27.76,30.08,28.07,24.91,22.22,19.13,14.32,9.39,12.8,16.3,15.41,13.13,10.87,9.45,8.85,7.75,6.72,6.6,6.89,7.13,6.87,6.56,6.14,5.58,5.46,5.59,5.61,6.11,6.25,6.25,6.1,5.83,5.47,5.2,5.01,5.35,5.74,8.45,15.25,18,15.23,12.9,11.16,10.05,11.19],"isHeadline":true},{"name":"出口","data":[9.5,9.5,9.5,9.5,11.13,11.13,12.25,12.25,14.929,22.55,23.5,23.5,23.5,26,26,26,26,26,26,27.83,28,28,28,28,28,28,28,27.78,27.75,27.75,26.23,15.5,12.03,12,16.36,15.8,13.47,11.93,10.28,9.31,8.48,7.45,7.38,7.82,8,7.63,7.18,6.59,6.23,6.06,6.12,6.07,6.72,6.95,6.95,6.84,6.59,5.91,5.5,5.31,5.79,6.26,9.31,17.05,20,16.4,14.38,12.44,10.83,12.37],"isHeadline":false}]},{"title":"铜箔加工费","unit":"万元/吨","series":[{"name":"6μm","data":[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,4.85,4.85,4.78,4.67,4.39,4.25,4.09,3.92,3.77,3.6,3.6,3.53,3.5,3.01,2.7,2.28,2.2,2.2,2.2,2.2,2.2,2.2,1.84,1.62,1.6,1.6,1.52,1.56,1.8,1.79,1.7,1.7,1.7,1.75,1.9,1.91,1.9,1.9,1.9,1.9,1.9,1.88,1.85,1.85,1.95,2,2,2,2,2,2,2],"isHeadline":true},{"name":"8μm","data":[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,3.85,3.85,3.78,3.66,3.41,3.25,3.09,3.05,3.03,2.95,2.95,2.73,2.65,2.16,1.93,1.56,1.45,1.45,1.73,1.85,1.85,1.85,1.63,1.55,1.55,1.55,1.52,1.52,1.55,1.54,1.45,1.45,1.45,1.45,1.65,1.65,1.65,1.65,1.65,1.65,1.65,1.65,1.65,1.65,1.72,1.75,1.75,1.75,1.75,1.75,1.75,1.75],"isHeadline":false},{"name":"4.5μm","data":[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,8.07,7.64,7.39,7.14,7,6.28,5.75,5.7,5.48,5.4,5.03,4.8,4.8,4.8,4.8,4.8,4.8,4.8,4.8,3.96,3.53,3.3,3,2.74,2.65,3.05,3.1,3.1,3.1,3.1,3.25,3.11,3.26,3.25,3.25,3.25,3.25,3.25,3.19,2.98,2.95,3.08,3.15,3.15,3.15,3.15,3.15,3.15,3.15],"isHeadline":false}]},{"title":"铝箔加工费","unit":"万元/吨","series":[{"name":"10μm","data":[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,2.65,2.62,2.59,2.59,2.59,2.59,2.63,2.63,2.63,2.65,2.63,2.55,2.45,2.4,2.4,2.4,2.4,2.4,2.4,2.4,2.4,2.33,2.2,2.2,2.2,2.2,2.2,2.2,2.03,1.9,1.9,1.9,1.9,1.9,1.9,1.9,1.9,1.9,1.9,1.9,1.9,1.9,1.9,1.9,1.9,1.9,1.9,1.9,1.9],"isHeadline":false},{"name":"12μm","data":[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,2,1.93,1.93,1.9,1.9,1.9,1.9,1.9,1.9,1.9,1.9,1.89,1.88,1.87,1.76,1.73,1.7,1.7,1.7,1.7,1.7,1.65,1.62,1.6,1.56,1.48,1.48,1.48,1.48,1.48,1.48,1.48,1.48,1.48,1.46,1.45,1.45,1.45,1.45,1.45,1.45,1.45,1.45,1.45,1.45,1.45,1.45,1.45,1.45,1.45,1.45,1.45],"isHeadline":true},{"name":"13μm","data":[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,1.8,1.8,1.8,1.8,1.8,1.8,1.8,1.8,1.78,1.78,1.77,1.73,1.69,1.63,1.63,1.63,1.63,1.63,1.6,1.57,1.55,1.52,1.45,1.45,1.45,1.45,1.45,1.45,1.45,1.45,1.3,1.44,1.43,1.43,1.31,1.3,1.3,1.3,1.3,1.3,1.3,1.3,1.3,1.3,1.3,1.3,1.3,1.3,1.34],"isHeadline":false}]}]};
 
 const STORAGE = {"months":["2023-01","2023-02","2023-03","2023-04","2023-05","2023-06","2023-07","2023-08","2023-09","2023-10","2023-11","2023-12","2024-01","2024-02","2024-03","2024-04","2024-05","2024-06","2024-07","2024-08","2024-09","2024-10","2024-11","2024-12","2025-01","2025-02","2025-03","2025-04","2025-05","2025-06","2025-07","2025-08","2025-09","2025-10","2025-11","2025-12","2026-01","2026-02","2026-03","2026-04","2026-05"],"year":[2023,2023,2023,2023,2023,2023,2023,2023,2023,2023,2023,2023,2024,2024,2024,2024,2024,2024,2024,2024,2024,2024,2024,2024,2025,2025,2025,2025,2025,2025,2025,2025,2025,2025,2025,2025,2026,2026,2026,2026,2026],"month":[1,2,3,4,5,6,7,8,9,10,11,12,1,2,3,4,5,6,7,8,9,10,11,12,1,2,3,4,5,6,7,8,9,10,11,12,1,2,3,4,5],"scale":[2.583,3.094,4.24,7.81,9.253,5.432,7.53,4.91,18.37,7.55,20.52,21.29,5.11,10,10.64,15.9,11,10.29,19.22,11.24,16.35,13.61,16.07,31.86,60.69,14.9,27.1,30.2,20.2,23.5,25.8,69.4,33.3,29.4,29.7,55.8,36,36.9,50.5,32.6,39.2],"scaleYoY":[null,null,null,null,null,null,null,null,null,null,null,null,97.832,223.206,150.943,103.585,18.88,89.433,155.246,128.921,-10.996,80.265,-21.686,49.648,1087.671,49,154.699,89.937,83.636,128.377,34.235,517.438,103.67,116.018,84.816,75.141,-40.682,147.651,86.347,7.947,94.059],"scaleMoM":[null,19.783,37.039,84.198,18.476,-41.295,38.623,-34.794,274.134,-58.9,171.788,3.752,-75.998,95.695,6.4,49.436,-30.818,-6.455,86.783,-41.519,45.463,-16.758,18.075,98.258,90.49,-75.449,81.879,11.439,-33.113,16.337,9.787,168.992,-52.017,-11.712,1.02,87.879,-35.484,2.5,36.856,-35.446,20.245],"epc2":[1.66,1.975,1.769,1.891,1.655,1.578,1.604,1.457,1.441,1.605,1.829,1.421,1.351,1.496,1.32,1.32,1.36,1.3,1.212,1.131,1.057,1.045,1.132,1.24,1.098,1.083,1.083,0.99,0.946,1.041,1.037,1.062,1.051,1.044,1.05,1.096,1.04,1.088,1.096,1.069,1.035],"epc4":[1.85,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,0.763,0.902,0.904,0.929,0.796,0.925,0.99,0.898,0.951,0.91,0.949,1.018],"sys2":[1.47,1.438,1.346,1.298,1.115,1.115,1.123,1.052,1.051,0.94,0.874,0.844,0.819,0.814,0.69,0.84,0.66,0.62,0.592,0.689,0.578,0.6,0.624,0.695,0.61,0.597,0.669,0.59,0.55,0.641,0.526,0.491,0.641,0.628,0.594,0.604,0.59,0.579,0.679,0.65,0.654],"sys4":[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,0.432,0.417,0.431,0.464,0.52,0.494,0.559,0.592,0.538,0.533,0.52,0.516]};
+const EUROPE = {"months":["2024-01","2024-02","2024-03","2024-04","2024-05","2024-06","2024-07","2024-08","2024-09","2024-10","2024-11","2024-12","2025-01","2025-02","2025-03","2025-04","2025-05","2025-06","2025-07","2025-08","2025-09","2025-10","2025-11","2025-12","2026-01","2026-02","2026-03","2026-04"],"bev":[12.097,13.059,19.647,14.455,15.209,20.884,13.966,12.663,21.344,16.952,18.47,20.562,16.606,16.465,24.291,18.468,19.349,23.907,18.644,15.981,26.026,22.54,25.377,30.896,18.906,19.068,34.406,25.53],"phev":[8.083,7.254,9.991,7.48,7.402,8.611,7.272,5.196,8.132,8.284,8.34,9.075,7.564,7.254,11.94,9.806,10.815,11.855,11.145,8.268,13.22,11.651,11.229,12.346,9.965,9.625,15.838,11.864],"total":[20.179,20.314,29.637,21.935,22.61,29.495,21.238,17.859,29.476,25.236,26.81,29.637,24.17,23.719,36.231,28.275,30.164,35.762,29.789,24.249,39.245,34.191,36.606,43.242,28.872,28.694,50.244,37.394],"yoy":[null,null,null,null,null,null,null,null,null,null,null,null,19.8,16.8,22.2,28.9,33.4,21.2,40.3,35.8,33.1,35.5,36.5,45.9,19.4,21,38.7,32.3],"ytd":[null,null,null,null,null,null,null,null,null,null,null,null,19.8,18.3,19.9,22.1,24.3,23.7,25.8,26.8,27.7,28.5,29.3,31,19.4,20.2,28.2,29.2]};
 // ---------- 共享工具 ----------
 const dongliCharts=[], priceCharts=[], storageCharts=[];
 function mk(id,opt,bucket){const ch=echarts.init(document.getElementById(id));ch.setOption(opt);bucket.push(ch);return ch;}
@@ -201,14 +208,38 @@ function chgSpan(p,label,suffix){
   mk('bat2',timeline([{name:'纯电客车',data:DATA.map(d=>nz(d.batBevBus)),color:'#1f6feb'},{name:'纯电专用车',data:DATA.map(d=>nz(d.batBevSpec)),color:'#1f9d55'},{name:'插混客车',data:DATA.map(d=>nz(d.batPhevBus)),color:'#d29922'},{name:'插混专用车',data:DATA.map(d=>nz(d.batPhevSpec)),color:'#f85149'}],' kWh'),dongliCharts);
   mk('batt',seasonal('battInstall','GWh'),dongliCharts);
 
+  // —— 欧洲新能源车 ——
+  const EM=EUROPE.months;
+  function euTL(defs,unit){
+    return {color:defs.map(s=>s.color),tooltip:{...baseTip,valueFormatter:v=>v==null?'-':(+v).toFixed(1)+(unit==='%'?'%':unit)},
+      legend:{top:0,right:0,textStyle:{color:'#5d7aa6'},inactiveColor:'#b9c9e2',data:defs.map(s=>s.name)},
+      grid:{left:50,right:18,top:36,bottom:54},
+      xAxis:{type:'category',data:EM,axisLine:axL,axisLabel:{...axT,hideOverlap:true}},
+      yAxis:{type:'value',scale:true,splitLine:splL,axisLabel:{...axT,formatter:'{value}'+(unit==='%'?'%':'')}},
+      dataZoom:[{type:'inside'},{type:'slider',height:16,bottom:8,borderColor:'#cfe0f5',textStyle:{color:'#5d7aa6'},fillerColor:'rgba(31,111,235,.12)'}],
+      series:defs.map(s=>({name:s.name,type:'line',smooth:true,showSymbol:false,connectNulls:false,data:s.data,lineStyle:{width:2.2,color:s.color},...(s.area?{areaStyle:{color:s.area}}:{})}))};
+  }
+  mk('eu1',euTL([{name:'BEV',data:EUROPE.bev,color:'#1f6feb'},{name:'PHEV',data:EUROPE.phev,color:'#8957e5'},{name:'合计',data:EUROPE.total,color:'#1f9d55'}],'万辆'),dongliCharts);
+  const eyrs=[...new Set(EM.map(m=>+m.slice(0,4)))].sort(), epal=['#1f6feb','#1f9d55','#f85149','#d29922'], elast=eyrs[eyrs.length-1];
+  const eser=eyrs.map((y,i)=>{
+    const arr=new Array(12).fill(null);
+    EM.forEach((m,idx)=>{ if(+m.slice(0,4)===y) arr[+m.slice(5,7)-1]=EUROPE.total[idx]; });
+    const hot=y===elast;
+    return {name:y+'年',type:'line',data:arr,connectNulls:false,symbol:'circle',symbolSize:hot?6:4,lineStyle:{width:hot?3.5:1.8,color:epal[i%epal.length]},itemStyle:{color:epal[i%epal.length]},emphasis:{focus:'series'},z:hot?10:1};
+  });
+  mk('eu2',{color:epal,tooltip:{...baseTip,valueFormatter:v=>v==null?'-':v.toFixed(1)+'万辆'},legend:{top:0,right:0,textStyle:{color:'#5d7aa6'},inactiveColor:'#b9c9e2',itemWidth:18,itemHeight:10},grid:{left:50,right:18,top:36,bottom:30},xAxis:{type:'category',data:MONTHS,boundaryGap:false,axisLine:axL,axisLabel:axT},yAxis:{type:'value',scale:true,splitLine:splL,axisLabel:axT},series:eser},dongliCharts);
+  mk('eu3',euTL([{name:'当月同比',data:EUROPE.yoy,color:'#1f6feb',area:'rgba(31,111,235,.08)'},{name:'累计同比',data:EUROPE.ytd,color:'#d29922'}],'%'),dongliCharts);
+
   const last=DATA[DATA.length-1], lys=DATA.find(d=>d.year===last.year-1&&d.month===last.month);
   document.getElementById('range').textContent=DATA[0].ym+' ~ '+last.ym;
   const pctChg=(c,b)=>(b==null||b===0)?null:(c-b)/b*100;
+  const euLN=(()=>{for(let i=EUROPE.total.length-1;i>=0;i--)if(EUROPE.total[i]!=null)return i;return -1;})();
   const kpis=[
-    {label:'新能源乘用车零售（最新月）',val:last.nevPv.toFixed(1),unit:'万辆',chg:chgSpan(last.nevPvYoY,'当月同比')},
-    {label:'新能源乘用车渗透率（最新月）',val:last.nevPvPen.toFixed(1),unit:'%',chg:chgSpan(lys?last.nevPvPen-lys.nevPvPen:null,'同比','pct')},
-    {label:'新能源商用车销量（最新月）',val:last.nevCv.toFixed(1),unit:'万辆',chg:chgSpan(last.nevCvYoY,'当月同比')},
-    {label:'动力电池装车量（最新月）',val:last.battInstall.toFixed(1),unit:'GWh',chg:chgSpan(pctChg(last.battInstall,lys?lys.battInstall:null),'同比')},
+    {label:'国内新能源乘用车零售（最新月）',val:last.nevPv.toFixed(1),unit:'万辆',chg:chgSpan(last.nevPvYoY,'当月同比')},
+    {label:'国内新能源乘用车渗透率（最新月）',val:last.nevPvPen.toFixed(1),unit:'%',chg:chgSpan(lys?last.nevPvPen-lys.nevPvPen:null,'同比','pct')},
+    {label:'国内新能源商用车销量（最新月）',val:last.nevCv.toFixed(1),unit:'万辆',chg:chgSpan(last.nevCvYoY,'当月同比')},
+    {label:'国内动力电池装车量（最新月）',val:last.battInstall.toFixed(1),unit:'GWh',chg:chgSpan(pctChg(last.battInstall,lys?lys.battInstall:null),'同比')},
+    {label:'欧洲新能源车销量（最新月）',val:EUROPE.total[euLN].toFixed(1),unit:'万辆',chg:chgSpan(EUROPE.yoy[euLN],'当月同比')},
   ];
   document.getElementById('kpis').innerHTML=kpis.map(k=>`<div class="kpi"><div class="label">${k.label}</div><div class="val">${k.val}<span class="unit">${k.unit}</span></div>${k.chg}</div>`).join('');
 
@@ -308,11 +339,11 @@ function renderStorage(){
 
   // s2 规模(柱)+当月同比(线)
   mk('s2',{tooltip:{...baseTip,valueFormatter:(v)=>v==null?'-':(+v).toFixed(1)},
-    legend:{top:0,right:0,textStyle:{color:'#5d7aa6'},inactiveColor:'#b9c9e2',data:['招中标规模','当月同比']},
-    grid:{left:50,right:50,top:36,bottom:54},
+    legend:{top:0,left:'center',textStyle:{color:'#5d7aa6'},inactiveColor:'#b9c9e2',data:['招中标规模','当月同比']},
+    grid:{left:50,right:52,top:48,bottom:54},
     xAxis:{type:'category',data:M,axisLine:axL,axisLabel:{...axT,hideOverlap:true}},
-    yAxis:[{type:'value',name:'GWh',scale:true,splitLine:splL,axisLabel:axT,nameTextStyle:{color:'#5d7aa6'}},
-           {type:'value',name:'同比%',position:'right',splitLine:{show:false},axisLabel:{...axT,formatter:'{value}%'},nameTextStyle:{color:'#5d7aa6'}}],
+    yAxis:[{type:'value',name:'GWh',scale:true,splitLine:splL,axisLabel:axT,nameTextStyle:{color:'#5d7aa6',align:'right'},nameGap:8},
+           {type:'value',name:'当月同比%',nameLocation:'end',position:'right',splitLine:{show:false},axisLabel:{...axT,formatter:'{value}%'},nameTextStyle:{color:'#5d7aa6',align:'left'},nameGap:8}],
     dataZoom:[{type:'inside'},{type:'slider',height:16,bottom:8,borderColor:'#cfe0f5',textStyle:{color:'#5d7aa6'},fillerColor:'rgba(31,111,235,.12)'}],
     series:[{name:'招中标规模',type:'bar',data:S.scale,itemStyle:{color:'rgba(31,111,235,.5)'}},
             {name:'当月同比',type:'line',yAxisIndex:1,smooth:true,showSymbol:false,connectNulls:false,data:S.scaleYoY,lineStyle:{width:2.2,color:'#d29922'}}]},storageCharts);
