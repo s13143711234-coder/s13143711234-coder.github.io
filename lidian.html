@@ -292,7 +292,7 @@ function chgSpan(p,label,suffix,bold){
       if(opts.yoyField){ yoy=d?d[opts.yoyField]:null; }
       else { const pv=(byYM[y-1]||{})[mo]; yoy=(v!=null&&pv!=null&&pv!==0)?(v-pv)/pv*100:null; }
       if(opts.ytdField){ ytd=d?nz(d[opts.ytdField]):null; }
-      else { let cc=0,pc=0;for(let m=1;m<=mo;m++){if((byYM[y]||{})[m]!=null)cc+=byYM[y][m];if((byYM[y-1]||{})[m]!=null)pc+=byYM[y-1][m];}ytd=pc>0?(cc/pc-1)*100:null; }
+      if(!opts.ytdField||ytd==null){ let cc=0,pc=0;for(let m=1;m<=mo;m++){if((byYM[y]||{})[m]!=null)cc+=byYM[y][m];if((byYM[y-1]||{})[m]!=null)pc+=byYM[y-1][m];}ytd=pc>0?(cc/pc-1)*100:null; }
       const f=x=>x==null?'-':((x>=0?'+':'')+x.toFixed(1)+'%');const extra=byYM[y-1]?`　<span style="color:#8b98a8">同比${f(yoy)} · 累计${f(ytd)}</span>`:'';s+=`${p.marker}${p.seriesName}：${v==null?'-':v.toFixed(1)+unit}${extra}<br>`;});return s;}};
     return opt;
   }
