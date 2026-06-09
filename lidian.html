@@ -693,7 +693,7 @@ function renderDemand(){
   const fmtNum=v=>v==null?'-':(Math.abs(+v)>=100?(+v).toFixed(0):(+v).toFixed(1));
   function fArea(years){const i=years.findIndex(y=>String(y).indexOf('E')>=0);if(i<0)return undefined;return {silent:true,itemStyle:{color:'rgba(133,87,229,.06)'},label:{show:true,position:'top',color:'#a3aebf',fontSize:11,formatter:'预测'},data:[[{xAxis:String(years[i])},{xAxis:String(years[years.length-1])}]]};}
   // 堆叠柱（grouped=true则并列）+ 可选右轴线
-  function barLine(id,years,bars,line,unit,grouped){
+  function barLine(id,years,bars,line,unit,grouped,yoyOn){
     const xs=years.map(String), lineNames=new Set(line?[line.name]:[]);
     const yA=[{type:'value',name:unit,scale:true,splitLine:splL,axisLabel:axT,nameTextStyle:{color:'#5d7aa6',align:'right'},nameGap:8}];
     const ser=bars.map((b,i)=>({name:b.name,type:'bar',...(grouped?{}:{stack:'a'}),data:b.data,itemStyle:{color:b.color||cpal[i%cpal.length]},...(i===0?{markArea:fArea(years)}:{})}));
@@ -701,7 +701,7 @@ function renderDemand(){
       yA.push({type:'value',name:line.axisName||'%',position:'right',scale:true,splitLine:{show:false},axisLabel:{...axT,formatter:'{value}'+(line.pct?'%':'')},nameTextStyle:{color:'#5d7aa6',align:'left'},nameGap:8});
       ser.push({name:line.name,type:'line',yAxisIndex:1,smooth:true,symbol:'circle',symbolSize:5,connectNulls:true,data:line.data.map(v=>v==null?null:(line.pct?+(v*100).toFixed(1):+(+v).toFixed(2))),lineStyle:{width:2.6,color:line.color||'#f85149'},itemStyle:{color:line.color||'#f85149'},z:10});
     }
-    mk(id,{tooltip:{...baseTip,formatter:ps=>{let s=ps[0].axisValue+'<br>';ps.forEach(p=>{const isL=lineNames.has(p.seriesName);s+=`${p.marker}${p.seriesName}：${p.value==null?'-':(isL?(+p.value).toFixed(line.pct?1:2)+(line.pct?'%':''):fmtNum(p.value)+unit)}<br>`;});return s;}},
+    mk(id,{tooltip:{...baseTip,formatter:ps=>{const i=ps[0].dataIndex;let s=ps[0].axisValue+'<br>';ps.forEach(p=>{const isL=lineNames.has(p.seriesName);if(isL){s+=`${p.marker}${p.seriesName}：${p.value==null?'-':(+p.value).toFixed(line.pct?1:2)+(line.pct?'%':'')}<br>`;return;}const b=bars.find(x=>x.name===p.seriesName);const cur=b?b.data[i]:p.value,prev=(b&&i>0)?b.data[i-1]:null;const yoy=(yoyOn&&cur!=null&&prev!=null&&prev!==0)?(cur-prev)/prev*100:null;const ys=yoy!=null?`　<span style="color:#8b98a8">同比${(yoy>=0?'+':'')+yoy.toFixed(1)}%</span>`:'';s+=`${p.marker}${p.seriesName}：${cur==null?'-':fmtNum(cur)+unit}${ys}<br>`;});return s;}},
       legend:{top:0,left:'center',type:'scroll',textStyle:{color:'#5d7aa6',fontSize:11},inactiveColor:'#b9c9e2'},
       grid:{left:58,right:line?56:18,top:42,bottom:28},
       xAxis:{type:'category',data:xs,axisLine:axL,axisLabel:axT},
@@ -731,20 +731,20 @@ function renderDemand(){
   document.getElementById('dmkpis').innerHTML=kdef.map(k=>{const v26=at(k.arr,k.yrs,'2026E'),v25=at(k.arr,k.yrs,'2025');const yoy=(v25>0)?(v26-v25)/v25*100:null;return `<div class="kpi"><div class="label">${k.label}（2026E）</div><div class="val">${fmtNum(v26)}<span class="unit">${k.unit}</span></div>${chgSpan(yoy,'较2025')}</div>`;}).join('');
 
   // 一、全球电池需求
-  barLine('d1a',D.bat.years,[{name:'动力电池',data:D.bat.dongli,color:'#1f6feb'},{name:'储能电池',data:D.bat.chuneng,color:'#1f9d55'},{name:'小型电池',data:D.bat.xiaoxing,color:'#d29922'},{name:'船舶机械等',data:D.bat.chuanbo,color:'#8957e5'}],{name:'合计YoY',data:D.bat.totalYoY,pct:true,axisName:'YoY%'},'GWh');
+  barLine('d1a',D.bat.years,[{name:'动力电池',data:D.bat.dongli,color:'#1f6feb'},{name:'储能电池',data:D.bat.chuneng,color:'#1f9d55'},{name:'小型电池',data:D.bat.xiaoxing,color:'#d29922'},{name:'船舶机械等',data:D.bat.chuanbo,color:'#8957e5'}],{name:'合计YoY',data:D.bat.totalYoY,pct:true,axisName:'YoY%'},'GWh',false,true);
   multiLine('d1b',D.bat.years,[{name:'动力电池',data:D.bat.dongli,color:'#1f6feb',hot:true},{name:'储能电池',data:D.bat.chuneng,color:'#1f9d55',hot:true},{name:'小型电池',data:D.bat.xiaoxing,color:'#d29922'}],'GWh');
 
   // 二、全球电动车销量与渗透率
-  barLine('d2a',D.ev.years,[{name:'中国',data:D.ev.china,color:'#1f6feb'},{name:'欧洲',data:D.ev.eu,color:'#1f9d55'},{name:'美国',data:D.ev.us,color:'#d29922'},{name:'其他',data:D.ev.other,color:'#9aa4b2'}],{name:'全球渗透率',data:D.ev.penGlobal,pct:true,axisName:'渗透率%'},'万辆');
+  barLine('d2a',D.ev.years,[{name:'中国',data:D.ev.china,color:'#1f6feb'},{name:'欧洲',data:D.ev.eu,color:'#1f9d55'},{name:'美国',data:D.ev.us,color:'#d29922'},{name:'其他',data:D.ev.other,color:'#9aa4b2'}],{name:'全球渗透率',data:D.ev.penGlobal,pct:true,axisName:'渗透率%'},'万辆',false,true);
   multiLine('d2b',D.ev.years,[{name:'中国',data:D.ev.penChina,color:'#1f6feb',hot:true},{name:'欧洲',data:D.ev.penEU,color:'#1f9d55'},{name:'美国',data:D.ev.penUS,color:'#d29922'},{name:'其他',data:D.ev.penOther,color:'#9aa4b2'}],null,true);
 
   // 三、全球动力装机
-  barLine('d3a',D.install.years,[{name:'国内',data:D.install.china,color:'#1f6feb'},{name:'欧洲',data:D.install.eu,color:'#1f9d55'},{name:'美国',data:D.install.us,color:'#d29922'},{name:'其他',data:D.install.other,color:'#9aa4b2'}],{name:'合计YoY',data:D.install.totalYoY,pct:true,axisName:'YoY%'},'GWh');
-  multiLine('d3b',D.install.years,[{name:'国内',data:D.install.kwhCN,color:'#1f6feb',hot:true},{name:'欧洲',data:D.install.kwhEU,color:'#1f9d55'},{name:'美国',data:D.install.kwhUS,color:'#d29922'},{name:'其他',data:D.install.kwhOther,color:'#9aa4b2'}],'kWh/辆');
+  barLine('d3a',D.install.years,[{name:'国内',data:D.install.china,color:'#1f6feb'},{name:'欧洲',data:D.install.eu,color:'#1f9d55'},{name:'美国',data:D.install.us,color:'#d29922'},{name:'其他',data:D.install.other,color:'#9aa4b2'}],{name:'合计YoY',data:D.install.totalYoY,pct:true,axisName:'YoY%'},'GWh',false,true);
+  multiLine('d3b',D.install.years.slice(5),[{name:'国内',data:D.install.kwhCN.slice(5),color:'#1f6feb',hot:true},{name:'欧洲',data:D.install.kwhEU.slice(5),color:'#1f9d55'},{name:'美国',data:D.install.kwhUS.slice(5),color:'#d29922'},{name:'其他',data:D.install.kwhOther.slice(5),color:'#9aa4b2'}],'kWh/辆');
 
   // 四、全球储能装机（用 bat.years 完整年轴，储能数组前两年为空）
-  barLine('d4a',D.bat.years,[{name:'中国',data:D.es.china,color:'#1f6feb'},{name:'美国',data:D.es.us,color:'#d29922'},{name:'欧洲',data:D.es.eu,color:'#1f9d55'},{name:'中东',data:D.es.mideast,color:'#e8590c'},{name:'澳大利亚',data:D.es.australia,color:'#16a3a3'},{name:'其他',data:D.es.other,color:'#9aa4b2'}],{name:'全球YoY',data:D.es.globalYoY,pct:true,axisName:'YoY%'},'GWh');
-  barLine('d4b',D.bat.years,[{name:'储能电池出货',data:D.es.shipment,color:'#1f9d55'}],{name:'备货系数',data:D.es.stockCoef,pct:false,axisName:'倍'},'GWh');
+  barLine('d4a',D.bat.years.slice(6),[{name:'中国',data:D.es.china.slice(6),color:'#1f6feb'},{name:'美国',data:D.es.us.slice(6),color:'#d29922'},{name:'欧洲',data:D.es.eu.slice(6),color:'#1f9d55'},{name:'中东',data:D.es.mideast.slice(6),color:'#e8590c'},{name:'澳大利亚',data:D.es.australia.slice(6),color:'#16a3a3'},{name:'其他',data:D.es.other.slice(6),color:'#9aa4b2'}],{name:'全球YoY',data:D.es.globalYoY.slice(6),pct:true,axisName:'YoY%'},'GWh',false,true);
+  barLine('d4b',D.bat.years.slice(2),[{name:'储能电池出货',data:D.es.shipment.slice(2),color:'#1f9d55'}],{name:'备货系数',data:D.es.stockCoef.slice(2),pct:false,axisName:'倍'},'GWh');
 
   // 五、电池供需平衡
   barLine('d5a',D.bal.years,[{name:'全球供给',data:D.bal.supplyG,color:'#1f6feb'},{name:'全球需求',data:D.bal.demandG,color:'#d29922'}],{name:'产能利用率',data:D.bal.util,pct:true,axisName:'利用率%'},'GWh',true);
@@ -753,9 +753,9 @@ function renderDemand(){
   barLine('d5c',D.bal.years,makers,null,'GWh');
 
   // 六、分区域电动车销量
-  barLine('d6a',D.cn.years,[{name:'乘用车',data:D.cn.pv,color:'#1f6feb'},{name:'客车',data:D.cn.bus,color:'#1f9d55'},{name:'货车',data:D.cn.truck,color:'#d29922'}],{name:'乘用车渗透率',data:D.cn.penPV,pct:true,axisName:'渗透率%'},'万辆');
+  barLine('d6a',D.cn.years,[{name:'乘用车',data:D.cn.pv,color:'#1f6feb'},{name:'客车',data:D.cn.bus,color:'#1f9d55'},{name:'货车',data:D.cn.truck,color:'#d29922'}],{name:'乘用车渗透率',data:D.cn.penPV,pct:true,axisName:'渗透率%'},'万辆',false,true);
   const ec=D.euEV.countries;
-  barLine('d6b',D.euEV.years,Object.keys(ec).map((k,i)=>({name:k,data:ec[k],color:cpal[i%cpal.length]})),null,'万辆');
+  barLine('d6b',D.euEV.years,Object.keys(ec).map((k,i)=>({name:k,data:ec[k],color:cpal[i%cpal.length]})),null,'万辆',false,true);
   barLine('d6c',D.usEV.years,[{name:'美国销量',data:D.usEV.sales,color:'#1f6feb'}],{name:'YoY',data:D.usEV.yoy,pct:true,axisName:'YoY%'},'万辆');
 
   // 七、明细表
