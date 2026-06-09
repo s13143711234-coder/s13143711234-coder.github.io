@@ -229,7 +229,7 @@ function chgSpan(p,label,suffix){
   function seasonalYoY(field,unit,zeroNull){
     const opt=seasonal(field,unit,zeroNull);
     const byYM={};DATA.forEach(d=>{(byYM[d.year]=byYM[d.year]||{})[d.month]=zeroNull?nz(d[field]):d[field];});
-    opt.tooltip={...baseTip,formatter:ps=>{if(!ps.length)return'';const mo=ps[0].dataIndex+1;let s=ps[0].axisValue+'<br>';ps.forEach(p=>{const y=+p.seriesName;const v=(byYM[y]||{})[mo],pv=(byYM[y-1]||{})[mo];const yoy=(v!=null&&pv!=null&&pv!==0)?(v-pv)/pv*100:null;let cc=0,pc=0;for(let m=1;m<=mo;m++){if((byYM[y]||{})[m]!=null)cc+=byYM[y][m];if((byYM[y-1]||{})[m]!=null)pc+=byYM[y-1][m];}const ytd=pc>0?(cc/pc-1)*100:null;const f=x=>x==null?'-':((x>=0?'+':'')+x.toFixed(1)+'%');const extra=byYM[y-1]?`　<span style="color:#8b98a8">同比${f(yoy)} · 累计${f(ytd)}</span>`:'';s+=`${p.marker}${p.seriesName}：${v==null?'-':v.toFixed(1)+unit}${extra}<br>`;});return s;}};
+    opt.tooltip={...baseTip,formatter:ps=>{if(!ps.length)return'';const mo=ps[0].dataIndex+1;let s=ps[0].axisValue+'<br>';ps.forEach(p=>{const y=parseInt(p.seriesName);const v=(byYM[y]||{})[mo],pv=(byYM[y-1]||{})[mo];const yoy=(v!=null&&pv!=null&&pv!==0)?(v-pv)/pv*100:null;let cc=0,pc=0;for(let m=1;m<=mo;m++){if((byYM[y]||{})[m]!=null)cc+=byYM[y][m];if((byYM[y-1]||{})[m]!=null)pc+=byYM[y-1][m];}const ytd=pc>0?(cc/pc-1)*100:null;const f=x=>x==null?'-':((x>=0?'+':'')+x.toFixed(1)+'%');const extra=byYM[y-1]?`　<span style="color:#8b98a8">同比${f(yoy)} · 累计${f(ytd)}</span>`:'';s+=`${p.marker}${p.seriesName}：${v==null?'-':v.toFixed(1)+unit}${extra}<br>`;});return s;}};
     return opt;
   }
   function timeline(defs,unit){
@@ -323,7 +323,7 @@ function chgSpan(p,label,suffix){
   function regSeasYoY(vals,unit){
     const opt=regSeas(vals,unit);
     const byYM={};UM.forEach((m,i)=>{const y=+m.slice(0,4),mo=+m.slice(5,7);(byYM[y]=byYM[y]||{})[mo]=vals[i];});
-    opt.tooltip={...baseTip,formatter:ps=>{if(!ps.length)return'';const mo=ps[0].dataIndex+1;let s=ps[0].axisValue+'<br>';ps.forEach(p=>{const y=+p.seriesName;const v=(byYM[y]||{})[mo],pv=(byYM[y-1]||{})[mo];const yoy=(v!=null&&pv!=null&&pv!==0)?(v-pv)/pv*100:null;let cc=0,pc=0;for(let m=1;m<=mo;m++){if((byYM[y]||{})[m]!=null)cc+=byYM[y][m];if((byYM[y-1]||{})[m]!=null)pc+=byYM[y-1][m];}const ytd=pc>0?(cc/pc-1)*100:null;const f=x=>x==null?'-':((x>=0?'+':'')+x.toFixed(1)+'%');const extra=byYM[y-1]?`　<span style="color:#8b98a8">同比${f(yoy)} · 累计${f(ytd)}</span>`:'';s+=`${p.marker}${p.seriesName}：${v==null?'-':v.toFixed(1)+unit}${extra}<br>`;});return s;}};
+    opt.tooltip={...baseTip,formatter:ps=>{if(!ps.length)return'';const mo=ps[0].dataIndex+1;let s=ps[0].axisValue+'<br>';ps.forEach(p=>{const y=parseInt(p.seriesName);const v=(byYM[y]||{})[mo],pv=(byYM[y-1]||{})[mo];const yoy=(v!=null&&pv!=null&&pv!==0)?(v-pv)/pv*100:null;let cc=0,pc=0;for(let m=1;m<=mo;m++){if((byYM[y]||{})[m]!=null)cc+=byYM[y][m];if((byYM[y-1]||{})[m]!=null)pc+=byYM[y-1][m];}const ytd=pc>0?(cc/pc-1)*100:null;const f=x=>x==null?'-':((x>=0?'+':'')+x.toFixed(1)+'%');const extra=byYM[y-1]?`　<span style="color:#8b98a8">同比${f(yoy)} · 累计${f(ytd)}</span>`:'';s+=`${p.marker}${p.seriesName}：${v==null?'-':v.toFixed(1)+unit}${extra}<br>`;});return s;}};
     return opt;
   }
   mk('us1',regSeasYoY(USEM.us.sales,'万辆'),dongliCharts);
