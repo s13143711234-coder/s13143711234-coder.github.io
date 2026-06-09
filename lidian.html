@@ -47,6 +47,10 @@
   .card .src{color:var(--sub);font-size:11.5px;margin:4px 2px 6px;text-align:right;opacity:.85}
   .chart{width:100%;height:340px}
   .full{grid-column:1/-1}
+  .datatoggle{margin:8px 2px 2px;font-size:12px;font-weight:600;color:#5d7aa6;background:#f3f8ff;border:1px solid #cfe0f5;border-radius:7px;padding:5px 14px;cursor:pointer;transition:.15s;font-family:inherit}
+  .datatoggle:hover{color:#16335f;background:#e8f0fe;border-color:#9fc0ef}
+  .datapanel{margin:4px 0 10px}
+  .datapanel .tablewrap{max-height:320px}
   .tablewrap{max-height:460px;overflow:auto;border-radius:10px;border:1px solid var(--line)}
   table{border-collapse:collapse;width:100%;font-size:12.5px;white-space:nowrap}
   thead th{position:sticky;top:0;background:var(--panel2);color:var(--txt);font-weight:600;padding:9px 11px;text-align:right;border-bottom:2px solid var(--line)}
@@ -199,8 +203,7 @@
 
   <div class="sec green">一、全球电池需求测算</div>
   <div class="grid">
-    <div class="card full"><h2>全球电池需求结构</h2><div class="ch">单位：GWh · 动力／储能／小型／船舶机械等 堆叠 · 右轴=合计YoY%</div><div id="d1a" class="chart" style="height:380px"></div></div>
-    <div class="card full"><h2>分项需求趋势</h2><div class="ch">单位：GWh · 动力／储能／小型电池</div><div id="d1b" class="chart"></div></div>
+    <div class="card full"><h2>全球电池需求结构</h2><div class="ch">单位：GWh · 动力／储能／小型／船舶机械等 堆叠 · 右轴=合计YoY% · 悬停看各项同比与合计</div><div id="d1a" class="chart" style="height:380px"></div></div>
   </div>
 
   <div class="sec">二、全球电动车销量与渗透率</div>
@@ -689,32 +692,50 @@ function renderSchedule(){
 let demandInited=false;
 function renderDemand(){
   const D=DEMAND;
-  const cpal=['#1f6feb','#1f9d55','#d29922','#f85149','#8957e5','#16a3a3','#e8590c','#9aa4b2','#cf4fae','#2bb0c9','#a0883b','#7a8cff'];
+  const cpal=['#6b9bd1','#62b08c','#d2b06a','#d98a84','#a395cc','#6cabab','#d99a6e','#aab2bf','#c98bbd','#7bbcc9','#b3a173','#9ba6d6'];
+  const DESAT={'#1f6feb':'#6b9bd1','#1f9d55':'#62b08c','#d29922':'#d2b06a','#8957e5':'#a395cc','#9aa4b2':'#aab2bf','#e8590c':'#d99a6e','#16a3a3':'#6cabab','#f85149':'#d98a84'};
+  const desat=c=>DESAT[c]||c;
   const fmtNum=v=>v==null?'-':(Math.abs(+v)>=100?(+v).toFixed(0):(+v).toFixed(1));
   function fArea(years){const i=years.findIndex(y=>String(y).indexOf('E')>=0);if(i<0)return undefined;return {silent:true,itemStyle:{color:'rgba(133,87,229,.06)'},label:{show:true,position:'top',color:'#a3aebf',fontSize:11,formatter:'预测'},data:[[{xAxis:String(years[i])},{xAxis:String(years[years.length-1])}]]};}
   // 堆叠柱（grouped=true则并列）+ 可选右轴线
   function barLine(id,years,bars,line,unit,grouped,yoyOn){
-    const xs=years.map(String), lineNames=new Set(line?[line.name]:[]);
+    const xs=years.map(String);
+    const lines=line?(Array.isArray(line)?line:[line]):[];
+    const lineNames=new Set(lines.map(l=>l.name));
+    const lineCols=['#cf8f6e','#d6a85a','#9b8fcc','#6cabab'];
     const yA=[{type:'value',name:unit,scale:true,splitLine:splL,axisLabel:axT,nameTextStyle:{color:'#5d7aa6',align:'right'},nameGap:8}];
-    const ser=bars.map((b,i)=>({name:b.name,type:'bar',...(grouped?{}:{stack:'a'}),data:b.data,itemStyle:{color:b.color||cpal[i%cpal.length]},...(i===0?{markArea:fArea(years)}:{})}));
-    if(line){
-      yA.push({type:'value',name:line.axisName||'%',position:'right',scale:true,splitLine:{show:false},axisLabel:{...axT,formatter:'{value}'+(line.pct?'%':'')},nameTextStyle:{color:'#5d7aa6',align:'left'},nameGap:8});
-      ser.push({name:line.name,type:'line',yAxisIndex:1,smooth:true,symbol:'circle',symbolSize:5,connectNulls:true,data:line.data.map(v=>v==null?null:(line.pct?+(v*100).toFixed(1):+(+v).toFixed(2))),lineStyle:{width:2.6,color:line.color||'#f85149'},itemStyle:{color:line.color||'#f85149'},z:10});
+    const ser=bars.map((b,i)=>({name:b.name,type:'bar',...(grouped?{}:{stack:'a'}),data:b.data,itemStyle:{color:desat(b.color||cpal[i%cpal.length])},...(i===0?{markArea:fArea(years)}:{})}));
+    if(lines.length){
+      yA.push({type:'value',name:lines[0].axisName||'%',position:'right',scale:true,splitLine:{show:false},axisLabel:{...axT,formatter:'{value}'+(lines[0].pct?'%':'')},nameTextStyle:{color:'#5d7aa6',align:'left'},nameGap:8});
+      lines.forEach((l,li)=>{const col=l.color||lineCols[li%lineCols.length];ser.push({name:l.name,type:'line',yAxisIndex:1,smooth:true,symbol:'circle',symbolSize:5,connectNulls:true,data:l.data.map(v=>v==null?null:(l.pct?+(v*100).toFixed(1):+(+v).toFixed(2))),lineStyle:{width:2.4,color:col},itemStyle:{color:col},z:10});});
     }
-    mk(id,{tooltip:{...baseTip,formatter:ps=>{const i=ps[0].dataIndex;let s=ps[0].axisValue+'<br>';ps.forEach(p=>{const isL=lineNames.has(p.seriesName);if(isL){s+=`${p.marker}${p.seriesName}：${p.value==null?'-':(+p.value).toFixed(line.pct?1:2)+(line.pct?'%':'')}<br>`;return;}const b=bars.find(x=>x.name===p.seriesName);const cur=b?b.data[i]:p.value,prev=(b&&i>0)?b.data[i-1]:null;const yoy=(yoyOn&&cur!=null&&prev!=null&&prev!==0)?(cur-prev)/prev*100:null;const ys=yoy!=null?`　<span style="color:#8b98a8">同比${(yoy>=0?'+':'')+yoy.toFixed(1)}%</span>`:'';s+=`${p.marker}${p.seriesName}：${cur==null?'-':fmtNum(cur)+unit}${ys}<br>`;});return s;}},
+    mk(id,{tooltip:{...baseTip,formatter:ps=>{const i=ps[0].dataIndex;let s=ps[0].axisValue+'<br>';ps.forEach(p=>{const ld=lines.find(l=>l.name===p.seriesName);if(ld){s+=`${p.marker}${p.seriesName}：${p.value==null?'-':(+p.value).toFixed(ld.pct?1:2)+(ld.pct?'%':'')}<br>`;return;}const b=bars.find(x=>x.name===p.seriesName);const cur=b?b.data[i]:p.value,prev=(b&&i>0)?b.data[i-1]:null;const yoy=(yoyOn&&cur!=null&&prev!=null&&prev!==0)?(cur-prev)/prev*100:null;const ys=yoy!=null?`　<span style="color:#8b98a8">同比${(yoy>=0?'+':'')+yoy.toFixed(1)}%</span>`:'';s+=`${p.marker}${p.seriesName}：${cur==null?'-':fmtNum(cur)+unit}${ys}<br>`;});if(yoyOn){let sc=0,sp=0,hc=false,hp=false;bars.forEach(b=>{if(b.data[i]!=null){sc+=b.data[i];hc=true;}if(i>0&&b.data[i-1]!=null){sp+=b.data[i-1];hp=true;}});if(hc){const sy=(hp&&sp!==0)?(sc-sp)/sp*100:null;const sys=sy!=null?`　同比 <b>${(sy>=0?'+':'')+sy.toFixed(1)}%</b>`:'';s+=`<span style="display:inline-block;margin-top:4px;padding-top:4px;border-top:1px solid #e8eef7;font-weight:600;color:#16335f">合计：${fmtNum(sc)}${unit}${sys}</span>`;}}return s;}},
       legend:{top:0,left:'center',type:'scroll',textStyle:{color:'#5d7aa6',fontSize:11},inactiveColor:'#b9c9e2'},
-      grid:{left:58,right:line?56:18,top:42,bottom:28},
+      grid:{left:58,right:lines.length?56:18,top:42,bottom:28},
       xAxis:{type:'category',data:xs,axisLine:axL,axisLabel:axT},
       yAxis:yA,series:ser},demandCharts);
+    addDataTable(id,xs,bars.map(b=>({name:b.name,data:b.data})).concat(lines.map(l=>({name:l.name,data:l.data,pct:l.pct}))));
   }
   function multiLine(id,years,lines,unit,pct){
+    const xs=years.map(String);
     const ser=lines.map((l,i)=>({name:l.name,type:'line',smooth:true,symbol:'circle',symbolSize:l.hot?5:3,connectNulls:true,data:l.data.map(v=>v==null?null:(pct?+(v*100).toFixed(1):v)),lineStyle:{width:l.hot?3.2:1.9,color:l.color||cpal[i%cpal.length]},itemStyle:{color:l.color||cpal[i%cpal.length]},...(i===0?{markArea:fArea(years)}:{})}));
     mk(id,{tooltip:{...baseTip,valueFormatter:v=>v==null?'-':(pct?(+v).toFixed(1)+'%':fmtNum(v)+(unit||''))},
       legend:{top:0,left:'center',type:'scroll',textStyle:{color:'#5d7aa6',fontSize:11},inactiveColor:'#b9c9e2'},
       grid:{left:50,right:18,top:42,bottom:28},
-      xAxis:{type:'category',data:years.map(String),axisLine:axL,axisLabel:axT},
+      xAxis:{type:'category',data:xs,axisLine:axL,axisLabel:axT},
       yAxis:{type:'value',name:pct?'%':unit,scale:true,splitLine:splL,axisLabel:{...axT,formatter:pct?'{value}%':'{value}'},nameTextStyle:{color:'#5d7aa6',align:'right'},nameGap:8},
       series:ser},demandCharts);
+    addDataTable(id,xs,lines.map(l=>({name:l.name,data:l.data,pct})));
+  }
+  function addDataTable(id,years,series){
+    const card=document.getElementById(id).closest('.card');if(!card||card.querySelector('.datatoggle'))return;
+    let html='<div class="tablewrap"><table><thead><tr><th>指标</th>'+years.map(y=>`<th>${y}</th>`).join('')+'</tr></thead><tbody>';
+    series.forEach(s=>{html+='<tr><td>'+s.name+'</td>'+s.data.map(v=>v==null?'<td>-</td>':('<td>'+(s.pct?(+v*100).toFixed(1)+'%':fmtNum(v))+'</td>')).join('')+'</tr>';});
+    html+='</tbody></table></div>';
+    const panel=document.createElement('div');panel.className='datapanel';panel.style.display='none';panel.innerHTML=html;
+    const btn=document.createElement('button');btn.className='datatoggle';btn.textContent='▸ 展开数据';
+    btn.onclick=()=>{const open=panel.style.display==='none';panel.style.display=open?'block':'none';btn.textContent=open?'▾ 收起数据':'▸ 展开数据';};
+    card.appendChild(btn);card.appendChild(panel);
   }
 
   // —— KPI（2026E 预测值 + 较 2025 同比）——
@@ -732,7 +753,6 @@ function renderDemand(){
 
   // 一、全球电池需求
   barLine('d1a',D.bat.years,[{name:'动力电池',data:D.bat.dongli,color:'#1f6feb'},{name:'储能电池',data:D.bat.chuneng,color:'#1f9d55'},{name:'小型电池',data:D.bat.xiaoxing,color:'#d29922'},{name:'船舶机械等',data:D.bat.chuanbo,color:'#8957e5'}],{name:'合计YoY',data:D.bat.totalYoY,pct:true,axisName:'YoY%'},'GWh',false,true);
-  multiLine('d1b',D.bat.years,[{name:'动力电池',data:D.bat.dongli,color:'#1f6feb',hot:true},{name:'储能电池',data:D.bat.chuneng,color:'#1f9d55',hot:true},{name:'小型电池',data:D.bat.xiaoxing,color:'#d29922'}],'GWh');
 
   // 二、全球电动车销量与渗透率
   barLine('d2a',D.ev.years,[{name:'中国',data:D.ev.china,color:'#1f6feb'},{name:'欧洲',data:D.ev.eu,color:'#1f9d55'},{name:'美国',data:D.ev.us,color:'#d29922'},{name:'其他',data:D.ev.other,color:'#9aa4b2'}],{name:'全球渗透率',data:D.ev.penGlobal,pct:true,axisName:'渗透率%'},'万辆',false,true);
@@ -753,7 +773,7 @@ function renderDemand(){
   barLine('d5c',D.bal.years,makers,null,'GWh');
 
   // 六、分区域电动车销量
-  barLine('d6a',D.cn.years,[{name:'乘用车',data:D.cn.pv,color:'#1f6feb'},{name:'客车',data:D.cn.bus,color:'#1f9d55'},{name:'货车',data:D.cn.truck,color:'#d29922'}],{name:'乘用车渗透率',data:D.cn.penPV,pct:true,axisName:'渗透率%'},'万辆',false,true);
+  barLine('d6a',D.cn.years,[{name:'乘用车',data:D.cn.pv,color:'#1f6feb'},{name:'客车',data:D.cn.bus,color:'#1f9d55'},{name:'货车',data:D.cn.truck,color:'#d29922'}],[{name:'乘用车渗透率',data:D.cn.penPV,pct:true,axisName:'渗透率%'},{name:'客车渗透率',data:D.cn.penBus,pct:true},{name:'货车渗透率',data:D.cn.penTruck,pct:true}],'万辆',false,true);
   const ec=D.euEV.countries;
   barLine('d6b',D.euEV.years,Object.keys(ec).map((k,i)=>({name:k,data:ec[k],color:cpal[i%cpal.length]})),null,'万辆',false,true);
   barLine('d6c',D.usEV.years,[{name:'美国销量',data:D.usEV.sales,color:'#1f6feb'}],{name:'YoY',data:D.usEV.yoy,pct:true,axisName:'YoY%'},'万辆');
