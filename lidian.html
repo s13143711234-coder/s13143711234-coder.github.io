@@ -106,13 +106,13 @@
   <div class="grid">
     <div class="card"><h2>新能源车销量</h2><div class="ch">单位：万辆 · 各年同期对比</div><div id="us1" class="chart"></div><div class="src">资料来源：Marklines</div></div>
     <div class="card"><h2>新能源渗透率</h2><div class="ch">单位：% · 各年同期对比</div><div id="us2" class="chart"></div><div class="src">资料来源：Marklines</div></div>
-    <div class="card full"><h2>当月同比</h2><div class="ch">单位：% · 连续时间轴（2025 年起有同比）</div><div id="us3" class="chart"></div><div class="src">资料来源：Marklines</div></div>
+    <div class="card full"><h2>当月同比 & 累计同比</h2><div class="ch">单位：% · 连续时间轴（2025 年起有同比）</div><div id="us3" class="chart"></div><div class="src">资料来源：Marklines</div></div>
   </div>
   <div class="sec" style="border-color:#e8590c">七、新兴市场新能源车</div>
   <div class="grid">
     <div class="card"><h2>新能源车销量</h2><div class="ch">单位：万辆 · 各年同期对比 · 非中美欧地区</div><div id="em1" class="chart"></div><div class="src">资料来源：Marklines</div></div>
     <div class="card"><h2>新能源渗透率</h2><div class="ch">单位：% · 各年同期对比 · 非中美欧地区</div><div id="em2" class="chart"></div><div class="src">资料来源：Marklines</div></div>
-    <div class="card full"><h2>当月同比</h2><div class="ch">单位：% · 连续时间轴（2025 年起有同比）</div><div id="em3" class="chart"></div><div class="src">资料来源：Marklines</div></div>
+    <div class="card full"><h2>当月同比 & 累计同比</h2><div class="ch">单位：% · 连续时间轴（2025 年起有同比）</div><div id="em3" class="chart"></div><div class="src">资料来源：Marklines</div></div>
   </div>
   <div class="sec">八、明细数据</div>
   <div class="grid">
@@ -297,16 +297,19 @@ function chgSpan(p,label,suffix){
     const ser=yrs.map((y,i)=>{const arr=new Array(12).fill(null);UM.forEach((m,idx)=>{if(+m.slice(0,4)===y)arr[+m.slice(5,7)-1]=vals[idx];});const hot=y===rl;return {name:y+'年',type:'line',data:arr,connectNulls:false,symbol:'circle',symbolSize:hot?6:4,lineStyle:{width:hot?3.5:1.8,color:epal[i%epal.length]},itemStyle:{color:epal[i%epal.length]},emphasis:{focus:'series'},z:hot?10:1};});
     return {color:epal,tooltip:{...baseTip,valueFormatter:v=>v==null?'-':v.toFixed(1)+unit},legend:{top:0,right:0,textStyle:{color:'#5d7aa6'},inactiveColor:'#b9c9e2',itemWidth:18,itemHeight:10},grid:{left:50,right:18,top:36,bottom:30},xAxis:{type:'category',data:MONTHS,boundaryGap:false,axisLine:axL,axisLabel:axT},yAxis:{type:'value',scale:true,splitLine:splL,axisLabel:axT},series:ser};
   }
-  function regYoyTL(data){
-    const dz0={type:'inside',startValue:'2025-01'},dz1={type:'slider',height:16,bottom:8,borderColor:'#cfe0f5',textStyle:{color:'#5d7aa6'},fillerColor:'rgba(31,111,235,.12)',startValue:'2025-01'};
-    return {color:['#1f6feb'],tooltip:{...baseTip,valueFormatter:v=>v==null?'-':v.toFixed(1)+'%'},legend:{top:0,right:0,textStyle:{color:'#5d7aa6'},data:['当月同比']},grid:{left:50,right:18,top:36,bottom:54},xAxis:{type:'category',data:UM,axisLine:axL,axisLabel:{...axT,hideOverlap:true}},yAxis:{type:'value',scale:true,splitLine:splL,axisLabel:{...axT,formatter:'{value}%'}},dataZoom:[dz0,dz1],series:[{name:'当月同比',type:'line',smooth:true,showSymbol:false,connectNulls:false,data,lineStyle:{width:2.2,color:'#1f6feb'},areaStyle:{color:'rgba(31,111,235,.08)'}}]};
+  function regYTD(sales){ // 累计同比：年内逐月累加 vs 上年同期累计
+    const byYear={}; UM.forEach((m,idx)=>{const y=m.slice(0,4),mo=+m.slice(5,7);(byYear[y]=byYear[y]||{})[mo]=sales[idx];});
+    return UM.map(m=>{const y=m.slice(0,4),mo=+m.slice(5,7),py=String(+y-1); if(!byYear[py])return null;
+      let cc=0,pc=0; for(let k=1;k<=mo;k++){ if(byYear[y][k]!=null)cc+=byYear[y][k]; if(byYear[py][k]!=null)pc+=byYear[py][k]; }
+      return pc>0?+((cc/pc-1)*100).toFixed(1):null; });
   }
+  const regYoyYtd=(yoy,sales)=>euTL([{name:'当月同比',data:yoy,color:'#1f6feb',area:'rgba(31,111,235,.08)'},{name:'累计同比',data:regYTD(sales),color:'#d29922'}],'%','2025-01');
   mk('us1',regSeas(USEM.us.sales,'万辆'),dongliCharts);
   mk('us2',regSeas(USEM.us.pen,'%'),dongliCharts);
-  mk('us3',regYoyTL(USEM.us.yoy),dongliCharts);
+  mk('us3',regYoyYtd(USEM.us.yoy,USEM.us.sales),dongliCharts);
   mk('em1',regSeas(USEM.em.sales,'万辆'),dongliCharts);
   mk('em2',regSeas(USEM.em.pen,'%'),dongliCharts);
-  mk('em3',regYoyTL(USEM.em.yoy),dongliCharts);
+  mk('em3',regYoyYtd(USEM.em.yoy,USEM.em.sales),dongliCharts);
   const lastNNidx=a=>{for(let i=a.length-1;i>=0;i--)if(a[i]!=null)return i;return -1;};
   const usLN=lastNNidx(USEM.us.sales), emLN=lastNNidx(USEM.em.sales);
 
@@ -315,10 +318,8 @@ function chgSpan(p,label,suffix){
   const pctChg=(c,b)=>(b==null||b===0)?null:(c-b)/b*100;
   const euLN=(()=>{for(let i=EUROPE.total.length-1;i>=0;i--)if(EUROPE.total[i]!=null)return i;return -1;})();
   const kpis=[
-    {label:'国内新能源乘用车零售（最新月）',val:last.nevPv.toFixed(1),unit:'万辆',chg:chgSpan(last.nevPvYoY,'当月同比')},
-    {label:'国内新能源乘用车渗透率（最新月）',val:last.nevPvPen.toFixed(1),unit:'%',chg:chgSpan(lys?last.nevPvPen-lys.nevPvPen:null,'同比','pct')},
+    {label:'国内新能源乘用车零售销量（最新月）',val:last.nevPv.toFixed(1),unit:'万辆',chg:chgSpan(last.nevPvYoY,'当月同比')},
     {label:'国内新能源商用车销量（最新月）',val:last.nevCv.toFixed(1),unit:'万辆',chg:chgSpan(last.nevCvYoY,'当月同比')},
-    {label:'国内动力电池装车量（最新月）',val:last.battInstall.toFixed(1),unit:'GWh',chg:chgSpan(pctChg(last.battInstall,lys?lys.battInstall:null),'同比')},
     {label:'欧洲新能源车销量（最新月）',val:EUROPE.total[euLN].toFixed(1),unit:'万辆',chg:chgSpan(EUROPE.yoy[euLN],'当月同比')},
     {label:'美国新能源车销量（最新月）',val:USEM.us.sales[usLN].toFixed(1),unit:'万辆',chg:chgSpan(USEM.us.yoy[usLN],'当月同比')},
     {label:'新兴市场新能源车销量（最新月）',val:USEM.em.sales[emLN].toFixed(1),unit:'万辆',chg:chgSpan(USEM.em.yoy[emLN],'当月同比')},
