@@ -131,12 +131,12 @@
   <div class="kpis" id="skpis"></div>
   <div class="sec green">一、国内储能招中标规模</div>
   <div class="grid">
-    <div class="card"><h2>招中标规模</h2><div class="ch">单位：GWh · 各年同期对比</div><div id="s1" class="chart"></div></div>
-    <div class="card"><h2>招中标规模（连续）& 当月同比</h2><div class="ch">柱：GWh · 线：当月同比% · 连续时间轴</div><div id="s2" class="chart"></div></div>
+    <div class="card full"><h2>招中标规模 & 当月/累计同比</h2><div class="ch">柱：GWh（左轴）· 线：当月同比% / 累计同比%（右轴）· 连续时间轴</div><div id="s2" class="chart"></div></div>
   </div>
   <div class="sec gold">二、国内储能中标价格</div>
   <div class="grid">
-    <div class="card full"><h2>储能中标价格走势</h2><div class="ch">单位：元/Wh · 连续时间轴（EPC / 系统 · 2小时 / 4小时）</div><div id="s3" class="chart"></div></div>
+    <div class="card"><h2>储能系统中标价</h2><div class="ch">左轴：元/Wh（2h/4h）· 右轴：系统2h 当月同比/环比%（虚线）· 连续时间轴</div><div id="sp_sys" class="chart"></div></div>
+    <div class="card"><h2>储能 EPC 中标价</h2><div class="ch">左轴：元/Wh（2h/4h）· 右轴：EPC2h 当月同比/环比%（虚线）· 连续时间轴</div><div id="sp_epc" class="chart"></div></div>
   </div>
   <div class="sec">三、明细数据</div>
   <div class="grid">
@@ -317,14 +317,15 @@ function chgSpan(p,label,suffix){
   document.getElementById('range').textContent=DATA[0].ym+' ~ '+last.ym;
   const pctChg=(c,b)=>(b==null||b===0)?null:(c-b)/b*100;
   const euLN=(()=>{for(let i=EUROPE.total.length-1;i>=0;i--)if(EUROPE.total[i]!=null)return i;return -1;})();
+  const usYtd=regYTD(USEM.us.sales), emYtd=regYTD(USEM.em.sales);
   const kpis=[
-    {label:'国内新能源乘用车零售销量（最新月）',val:last.nevPv.toFixed(1),unit:'万辆',chg:chgSpan(last.nevPvYoY,'当月同比')},
-    {label:'国内新能源商用车销量（最新月）',val:last.nevCv.toFixed(1),unit:'万辆',chg:chgSpan(last.nevCvYoY,'当月同比')},
-    {label:'欧洲新能源车销量（最新月）',val:EUROPE.total[euLN].toFixed(1),unit:'万辆',chg:chgSpan(EUROPE.yoy[euLN],'当月同比')},
-    {label:'美国新能源车销量（最新月）',val:USEM.us.sales[usLN].toFixed(1),unit:'万辆',chg:chgSpan(USEM.us.yoy[usLN],'当月同比')},
-    {label:'新兴市场新能源车销量（最新月）',val:USEM.em.sales[emLN].toFixed(1),unit:'万辆',chg:chgSpan(USEM.em.yoy[emLN],'当月同比')},
+    {label:'国内新能源乘用车零售销量（最新月）',val:last.nevPv.toFixed(1),unit:'万辆',yoy:last.nevPvYoY,ytd:last.nevPvYtd},
+    {label:'国内新能源商用车销量（最新月）',val:last.nevCv.toFixed(1),unit:'万辆',yoy:last.nevCvYoY,ytd:last.cvYtd},
+    {label:'欧洲新能源车销量（最新月）',val:EUROPE.total[euLN].toFixed(1),unit:'万辆',yoy:EUROPE.yoy[euLN],ytd:EUROPE.ytd[euLN]},
+    {label:'美国新能源车销量（最新月）',val:USEM.us.sales[usLN].toFixed(1),unit:'万辆',yoy:USEM.us.yoy[usLN],ytd:usYtd[usLN]},
+    {label:'新兴市场新能源车销量（最新月）',val:USEM.em.sales[emLN].toFixed(1),unit:'万辆',yoy:USEM.em.yoy[emLN],ytd:emYtd[emLN]},
   ];
-  document.getElementById('kpis').innerHTML=kpis.map(k=>`<div class="kpi"><div class="label">${k.label}</div><div class="val">${k.val}<span class="unit">${k.unit}</span></div>${k.chg}</div>`).join('');
+  document.getElementById('kpis').innerHTML=kpis.map(k=>`<div class="kpi"><div class="label">${k.label}</div><div class="val">${k.val}<span class="unit">${k.unit}</span></div>${chgSpan(k.yoy,'当月同比')}<br>${chgSpan(k.ytd,'累计同比')}</div>`).join('');
 
   const cols=[{k:'ym',t:'月份',d:0},{k:'nevPv',t:'新能源乘用车零售(万辆)',d:1},{k:'nevPvPen',t:'乘用车渗透率(%)',d:1},{k:'nevPvYoY',t:'乘用车当月同比(%)',d:1},{k:'nevPvYtd',t:'乘用车累计同比(%)',d:1,z:1},{k:'nevCv',t:'新能源商用车(万辆)',d:1},{k:'cvPen',t:'商用车渗透率(%)',d:1},{k:'nevCvYoY',t:'商用车当月同比(%)',d:1},{k:'cvYtd',t:'商用车累计同比(%)',d:1},{k:'batBevPv',t:'纯电乘用车带电(kWh)',d:1},{k:'batPhevPv',t:'插混乘用车带电(kWh)',d:1},{k:'battInstall',t:'动力电池装车(GWh)',d:1}];
   const th='<thead><tr>'+cols.map(c=>`<th>${c.t}</th>`).join('')+'</tr></thead>';
@@ -406,40 +407,40 @@ function renderStorage(){
   function lastNN(a){for(let i=a.length-1;i>=0;i--)if(a[i]!=null)return i;return -1;}
   const fmt=(v,d)=>v==null?'-':(+v).toFixed(d);
 
-  // s1 招中标规模 各年同期对比
-  const sser=yrs.map((y,i)=>{
-    const arr=new Array(12).fill(null);
-    S.year.forEach((yy,idx)=>{ if(yy===y) arr[S.month[idx]-1]=S.scale[idx]; });
-    const hot=y===latest;
-    return {name:y+'年',type:'line',data:arr,connectNulls:false,symbol:'circle',symbolSize:hot?6:4,
-      lineStyle:{width:hot?3.5:1.8,color:pal[i%pal.length]},itemStyle:{color:pal[i%pal.length]},emphasis:{focus:'series'},z:hot?10:1};
-  });
-  mk('s1',{color:pal,tooltip:{...baseTip,valueFormatter:v=>v==null?'-':v.toFixed(1)+' GWh'},
-    legend:{top:0,right:0,textStyle:{color:'#5d7aa6'},inactiveColor:'#b9c9e2',itemWidth:18,itemHeight:10},
-    grid:{left:50,right:18,top:36,bottom:30},
-    xAxis:{type:'category',data:MM,boundaryGap:false,axisLine:axL,axisLabel:axT},
-    yAxis:{type:'value',scale:true,splitLine:splL,axisLabel:axT},series:sser},storageCharts);
+  // 累计同比（由月度规模累加测算）
+  function stoYTD(sc){const byY={};M.forEach((m,i)=>{const y=m.slice(0,4),mo=+m.slice(5,7);(byY[y]=byY[y]||{})[mo]=sc[i];});return M.map(m=>{const y=m.slice(0,4),mo=+m.slice(5,7),py=String(+y-1);if(!byY[py])return null;let cc=0,pc=0;for(let k=1;k<=mo;k++){if(byY[y][k]!=null)cc+=byY[y][k];if(byY[py][k]!=null)pc+=byY[py][k];}return pc>0?+((cc/pc-1)*100).toFixed(1):null;});}
+  const scaleYTD=stoYTD(S.scale);
 
-  // s2 规模(柱)+当月同比(线)
+  // s2 招中标规模(柱)+当月同比+累计同比
   mk('s2',{tooltip:{...baseTip,valueFormatter:(v)=>v==null?'-':(+v).toFixed(1)},
-    legend:{top:0,left:'center',textStyle:{color:'#5d7aa6'},inactiveColor:'#b9c9e2',data:['招中标规模','当月同比']},
+    legend:{top:0,left:'center',textStyle:{color:'#5d7aa6'},inactiveColor:'#b9c9e2',data:['招中标规模','当月同比','累计同比']},
     grid:{left:50,right:52,top:48,bottom:54},
     xAxis:{type:'category',data:M,axisLine:axL,axisLabel:{...axT,hideOverlap:true}},
     yAxis:[{type:'value',name:'GWh',scale:true,splitLine:splL,axisLabel:axT,nameTextStyle:{color:'#5d7aa6',align:'right'},nameGap:8},
-           {type:'value',name:'当月同比%',nameLocation:'end',position:'right',splitLine:{show:false},axisLabel:{...axT,formatter:'{value}%'},nameTextStyle:{color:'#5d7aa6',align:'left'},nameGap:8}],
+           {type:'value',name:'同比%',nameLocation:'end',position:'right',splitLine:{show:false},axisLabel:{...axT,formatter:'{value}%'},nameTextStyle:{color:'#5d7aa6',align:'left'},nameGap:8}],
     dataZoom:[{type:'inside'},{type:'slider',height:16,bottom:8,borderColor:'#cfe0f5',textStyle:{color:'#5d7aa6'},fillerColor:'rgba(31,111,235,.12)'}],
     series:[{name:'招中标规模',type:'bar',data:S.scale,itemStyle:{color:'rgba(31,111,235,.5)'}},
-            {name:'当月同比',type:'line',yAxisIndex:1,smooth:true,showSymbol:false,connectNulls:false,data:S.scaleYoY,lineStyle:{width:2.2,color:'#d29922'}}]},storageCharts);
+            {name:'当月同比',type:'line',yAxisIndex:1,smooth:true,showSymbol:false,connectNulls:false,data:S.scaleYoY,lineStyle:{width:2.2,color:'#d29922'}},
+            {name:'累计同比',type:'line',yAxisIndex:1,smooth:true,showSymbol:false,connectNulls:false,data:scaleYTD,lineStyle:{width:2.2,color:'#f85149'}}]},storageCharts);
 
-  // s3 中标价格走势
-  const pd=[{name:'储能EPC-2h',data:S.epc2,color:'#1f6feb'},{name:'储能EPC-4h',data:S.epc4,color:'#16a3a3'},{name:'储能系统-2h',data:S.sys2,color:'#1f9d55'},{name:'储能系统-4h',data:S.sys4,color:'#f85149'}];
-  mk('s3',{color:pd.map(s=>s.color),tooltip:{...baseTip,valueFormatter:v=>v==null?'-':(+v).toFixed(3)+' 元/Wh'},
-    legend:{top:0,right:0,textStyle:{color:'#5d7aa6'},inactiveColor:'#b9c9e2',data:pd.map(s=>s.name)},
-    grid:{left:54,right:18,top:36,bottom:54},
-    xAxis:{type:'category',data:M,axisLine:axL,axisLabel:{...axT,hideOverlap:true}},
-    yAxis:{type:'value',scale:true,splitLine:splL,axisLabel:axT},
-    dataZoom:[{type:'inside'},{type:'slider',height:16,bottom:8,borderColor:'#cfe0f5',textStyle:{color:'#5d7aa6'},fillerColor:'rgba(31,111,235,.12)'}],
-    series:pd.map(s=>({name:s.name,type:'line',smooth:true,showSymbol:false,connectNulls:false,data:s.data,lineStyle:{width:2.2,color:s.color}}))},storageCharts);
+  // 价格 同比/环比
+  const pYoY=a=>a.map((v,i)=>{const p=a[i-12];return (v!=null&&p!=null&&p!==0)?+((v/p-1)*100).toFixed(1):null;});
+  const pMoM=a=>a.map((v,i)=>{let pj=-1;for(let j=i-1;j>=0;j--){if(a[j]!=null){pj=j;break;}}return (v!=null&&pj>=0&&a[pj]!==0)?+((v/a[pj]-1)*100).toFixed(1):null;});
+  function priceChart(id,name,p2,p4,lbl2,lbl4){
+    mk(id,{tooltip:{...baseTip,formatter:ps=>{let s=ps[0].axisValue+'<br>';ps.forEach(p=>{const isPct=p.seriesName.includes('同比')||p.seriesName.includes('环比');s+=p.marker+p.seriesName+'：'+(p.value==null?'-':(+p.value).toFixed(isPct?1:3)+(isPct?'%':' 元/Wh'))+'<br>';});return s;}},
+      legend:{top:0,left:'center',textStyle:{color:'#5d7aa6',fontSize:11},inactiveColor:'#b9c9e2',itemWidth:14,itemHeight:8,data:[lbl2,lbl4,name+'2h当月同比',name+'2h环比']},
+      grid:{left:50,right:50,top:48,bottom:54},
+      xAxis:{type:'category',data:M,axisLine:axL,axisLabel:{...axT,hideOverlap:true}},
+      yAxis:[{type:'value',name:'元/Wh',scale:true,splitLine:splL,axisLabel:axT,nameTextStyle:{color:'#5d7aa6',align:'right'},nameGap:8},
+             {type:'value',name:'同比/环比%',position:'right',splitLine:{show:false},axisLabel:{...axT,formatter:'{value}%'},nameTextStyle:{color:'#5d7aa6',align:'left'},nameGap:8}],
+      dataZoom:[{type:'inside'},{type:'slider',height:16,bottom:8,borderColor:'#cfe0f5',textStyle:{color:'#5d7aa6'},fillerColor:'rgba(31,111,235,.12)'}],
+      series:[{name:lbl2,type:'line',smooth:true,showSymbol:false,connectNulls:false,data:p2,lineStyle:{width:2.4,color:'#1f9d55'}},
+              {name:lbl4,type:'line',smooth:true,showSymbol:false,connectNulls:false,data:p4,lineStyle:{width:2.4,color:'#1f6feb'}},
+              {name:name+'2h当月同比',type:'line',yAxisIndex:1,smooth:true,showSymbol:false,connectNulls:false,data:pYoY(p2),lineStyle:{width:1.6,color:'#d29922',type:'dashed'}},
+              {name:name+'2h环比',type:'line',yAxisIndex:1,smooth:true,showSymbol:false,connectNulls:false,data:pMoM(p2),lineStyle:{width:1.6,color:'#f85149',type:'dashed'}}]},storageCharts);
+  }
+  priceChart('sp_sys','系统',S.sys2,S.sys4,'储能系统-2h','储能系统-4h');
+  priceChart('sp_epc','EPC',S.epc2,S.epc4,'储能EPC-2h','储能EPC-4h');
 
   // KPI
   const li=lastNN(S.scale);
