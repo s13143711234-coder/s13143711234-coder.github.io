@@ -131,6 +131,7 @@
   <div class="kpis" id="skpis"></div>
   <div class="sec green">一、国内储能招中标规模</div>
   <div class="grid">
+    <div class="card"><h2>招中标规模（各年同期对比）</h2><div class="ch">单位：GWh · 各年同期对比（每年一条折线）</div><div id="s1" class="chart"></div></div>
     <div class="card full"><h2>招中标规模 & 当月/累计同比</h2><div class="ch">柱：GWh（左轴）· 线：当月同比% / 累计同比%（右轴）· 连续时间轴</div><div id="s2" class="chart"></div></div>
   </div>
   <div class="sec gold">二、国内储能中标价格</div>
@@ -174,12 +175,8 @@
     若有任何使用意见或修改建议，欢迎联系邵梓洋 13143711234
   </div>
   <div class="kpis" id="schkpis"></div>
-  <div class="sec green">分企业月度排产</div>
-  <div class="modetoggle">
-    <button class="mbtn active" data-mode="prod">排产量</button>
-    <button class="mbtn" data-mode="yoy">当月同比</button>
-    <button class="mbtn" data-mode="ytd">累计同比</button>
-  </div>
+  <div class="sec green">分环节 · 分企业月度排产</div>
+  <div class="modetoggle" id="segtabs"></div>
   <div id="schwrap"></div>
 </section>
 
@@ -351,7 +348,7 @@ function renderPrice(){
       grid:{left:54,right:18,top:36,bottom:54},
       xAxis:{type:'category',data:D,axisLine:axL,axisLabel:{...axT,hideOverlap:true}},
       yAxis:{type:'value',scale:true,splitLine:splL,axisLabel:axT},
-      dataZoom:[{type:'inside'},{type:'slider',height:16,bottom:8,borderColor:'#cfe0f5',textStyle:{color:'#5d7aa6'},fillerColor:'rgba(31,111,235,.12)'}],
+      dataZoom:[{type:'inside',startValue:'2024-01'},{type:'slider',height:16,bottom:8,borderColor:'#cfe0f5',textStyle:{color:'#5d7aa6'},fillerColor:'rgba(31,111,235,.12)',startValue:'2024-01'}],
       series:defs.map((s,i)=>({name:s.name,type:'line',smooth:true,showSymbol:false,connectNulls:false,data:s.data,lineStyle:{width:2.2,color:s.color||cpal[i%cpal.length]}}))};
   }
 
@@ -413,6 +410,20 @@ function renderStorage(){
   // 累计同比（由月度规模累加测算）
   function stoYTD(sc){const byY={};M.forEach((m,i)=>{const y=m.slice(0,4),mo=+m.slice(5,7);(byY[y]=byY[y]||{})[mo]=sc[i];});return M.map(m=>{const y=m.slice(0,4),mo=+m.slice(5,7),py=String(+y-1);if(!byY[py])return null;let cc=0,pc=0;for(let k=1;k<=mo;k++){if(byY[y][k]!=null)cc+=byY[y][k];if(byY[py][k]!=null)pc+=byY[py][k];}return pc>0?+((cc/pc-1)*100).toFixed(1):null;});}
   const scaleYTD=stoYTD(S.scale);
+
+  // s1 招中标规模 各年同期对比
+  const sser=yrs.map((y,i)=>{
+    const arr=new Array(12).fill(null);
+    S.year.forEach((yy,idx)=>{ if(yy===y) arr[S.month[idx]-1]=S.scale[idx]; });
+    const hot=y===latest;
+    return {name:y+'年',type:'line',data:arr,connectNulls:false,symbol:'circle',symbolSize:hot?6:4,
+      lineStyle:{width:hot?3.5:1.8,color:pal[i%pal.length]},itemStyle:{color:pal[i%pal.length]},emphasis:{focus:'series'},z:hot?10:1};
+  });
+  mk('s1',{color:pal,tooltip:{...baseTip,valueFormatter:v=>v==null?'-':v.toFixed(1)+' GWh'},
+    legend:{top:0,right:0,textStyle:{color:'#5d7aa6'},inactiveColor:'#b9c9e2',itemWidth:18,itemHeight:10},
+    grid:{left:50,right:18,top:36,bottom:30},
+    xAxis:{type:'category',data:MM,boundaryGap:false,axisLine:axL,axisLabel:axT},
+    yAxis:{type:'value',scale:true,splitLine:splL,axisLabel:axT},series:sser},storageCharts);
 
   // s2 招中标规模(柱)+当月同比+累计同比
   mk('s2',{tooltip:{...baseTip,valueFormatter:(v)=>v==null?'-':(+v).toFixed(1)},
@@ -482,64 +493,57 @@ function schYTD(co){ // 累计同比 {year:[12 ytd-yoy%]}
     out[y]=a; });
   return out;
 }
-function schLatest(co){ // {y,m,val,yoy}
+function schLatest(co){ // {y,m,val,yoy,ytd}
   const yrs=Object.keys(co.years).sort(); const ly=yrs[yrs.length-1]; const arr=co.years[ly];
   let li=-1; for(let i=arr.length-1;i>=0;i--){if(arr[i]!=null){li=i;break;}}
   if(li<0) return null;
   const py=co.years[String(+ly-1)]; const pv=py?py[li]:null;
   const yoy=(pv!=null&&pv!==0)?(arr[li]-pv)/pv*100:null;
-  return {y:ly,m:li+1,val:arr[li],yoy};
+  let cc=0,pc=0; for(let k=0;k<=li;k++){ if(arr[k]!=null)cc+=arr[k]; if(py&&py[k]!=null)pc+=py[k]; }
+  const ytd=(pc>0)?(cc/pc-1)*100:null;
+  return {y:ly,m:li+1,val:arr[li],yoy,ytd};
+}
+function pctSpan(label,v){
+  const c=(v==null)?'#5d7aa6':(Math.abs(v)<0.05?'#8a97a8':(v>0?'#e5484d':'#1f9d55'));
+  const a=(v==null)?'—':((v>0?'▲':(Math.abs(v)<0.05?'▬':'▼'))+Math.abs(v).toFixed(1)+'%');
+  return ` · ${label} <b style="color:${c}">${a}</b>`;
 }
 function renderSchedule(){
   const S=SCHEDULE, MM=['1月','2月','3月','4月','5月','6月','7月','8月','9月','10月','11月','12月'];
-  // KPI：各环节龙头最新月排产
+  // KPI：各环节龙头排产（对应月份）
   const leaders=['宁德时代','比亚迪','湖南裕能','璞泰来','恩捷股份','天赐材料'];
   const sk=[];
   leaders.forEach(nm=>{ const c=S.companies.find(x=>x.name===nm); if(!c)return; const L=schLatest(c); if(!L)return;
-    sk.push(`<div class="kpi"><div class="label">${nm}（最新月排产）</div><div class="val">${L.val}<span class="unit">${c.unit}</span></div>${chgSpan(L.yoy,'同比 · '+L.y+'年'+L.m+'月')}</div>`); });
+    sk.push(`<div class="kpi"><div class="label">${nm}（${L.m}月排产）</div><div class="val">${L.val}<span class="unit">${c.unit}</span></div>${chgSpan(L.yoy,'当月同比')}<br>${chgSpan(L.ytd,'累计同比')}</div>`); });
   document.getElementById('schkpis').innerHTML=sk.slice(0,5).join('');
 
-  // 为每个企业建卡片
-  const wrap=document.getElementById('schwrap');
-  let html='';
-  S.segments.forEach(sg=>{
-    const cos=S.companies.filter(c=>c.seg===sg.seg);
-    if(!cos.length) return;
-    html+=`<div class="seglabel">${sg.seg}（${sg.unit}）</div><div class="schgrid">`;
-    cos.forEach((c,i)=>{ html+=`<div class="card"><h2>${c.name}</h2><div class="ch" id="schsub_${c.seg}_${i}"></div><div class="chart" id="schc_${c.seg}_${i}"></div></div>`; });
-    html+='</div>';
-  });
-  wrap.innerHTML=html;
+  // 环节选项卡
+  const segs=S.segments.map(s=>s.seg);
+  document.getElementById('segtabs').innerHTML=segs.map((s,i)=>`<button class="mbtn${i===0?' active':''}" data-seg="${s}">${s}排产</button>`).join('');
 
-  function drawAll(){
-    S.segments.forEach(sg=>{
-      const cos=S.companies.filter(c=>c.seg===sg.seg);
-      cos.forEach((co,i)=>{
-        const el=document.getElementById('schc_'+co.seg+'_'+i); if(!el) return;
-        let ch=echarts.getInstanceByDom(el); if(!ch){ ch=echarts.init(el); scheduleCharts.push(ch); }
-        const isPct=schMode!=='prod';
-        const src=schMode==='yoy'?schYoY(co):(schMode==='ytd'?schYTD(co):co.years);
-        const yrs=Object.keys(src).sort();
-        const latest=yrs[yrs.length-1];
-        const unit=isPct?'%':co.unit;
-        const series=yrs.map(y=>{const hot=y===latest;const col=schColor(y);return {name:y+'年',type:'line',data:src[y],connectNulls:false,symbol:'circle',symbolSize:hot?5:3,lineStyle:{width:hot?3:1.6,color:col},itemStyle:{color:col},emphasis:{focus:'series'},z:hot?10:1};});
-        ch.setOption({tooltip:{...baseTip,valueFormatter:v=>v==null?'-':(+v).toFixed(isPct?1:2)+unit},
-          legend:{top:0,right:0,textStyle:{color:'#5d7aa6',fontSize:11},inactiveColor:'#b9c9e2',itemWidth:14,itemHeight:8,itemGap:7},
-          grid:{left:46,right:14,top:30,bottom:26},
-          xAxis:{type:'category',data:MM,boundaryGap:false,axisLine:axL,axisLabel:{...axT,fontSize:11}},
-          yAxis:{type:'value',scale:true,splitLine:splL,axisLabel:{...axT,fontSize:11,formatter:isPct?'{value}%':'{value}'}},series},true);
-        const L=schLatest(co);
-        const sub=document.getElementById('schsub_'+co.seg+'_'+i);
-        if(L && sub){ const yc=(L.yoy==null)?'#5d7aa6':(Math.abs(L.yoy)<0.05?'#8a97a8':(L.yoy>0?'#e5484d':'#1f9d55')); const ph=L.yoy==null?'':`，同比 <b style="color:${yc}">${L.yoy>0?'+':''}${L.yoy.toFixed(1)}%</b>`; sub.innerHTML=`最新 ${L.y}年${L.m}月：${L.val}${co.unit}${ph}`; }
-      });
+  function drawSeg(seg){
+    const cos=S.companies.filter(c=>c.seg===seg);
+    scheduleCharts.forEach(ch=>{try{ch.dispose();}catch(e){}}); scheduleCharts.length=0;
+    document.getElementById('schwrap').innerHTML='<div class="schgrid">'+cos.map((c,i)=>`<div class="card"><h2>${c.name}（${c.unit}）</h2><div class="ch" id="schsub_${i}"></div><div class="chart" id="schc_${i}"></div></div>`).join('')+'</div>';
+    cos.forEach((co,i)=>{
+      const el=document.getElementById('schc_'+i); const ch=echarts.init(el); scheduleCharts.push(ch);
+      const yrs=Object.keys(co.years).sort(); const latest=yrs[yrs.length-1]; const unit=co.unit;
+      const series=yrs.map(y=>{const hot=y===latest;const col=schColor(y);return {name:y+'年',type:'line',data:co.years[y],connectNulls:false,symbol:'circle',symbolSize:hot?5:3,lineStyle:{width:hot?3:1.6,color:col},itemStyle:{color:col},emphasis:{focus:'series'},z:hot?10:1};});
+      ch.setOption({tooltip:{...baseTip,valueFormatter:v=>v==null?'-':(+v).toFixed(2)+unit},
+        legend:{top:0,right:0,textStyle:{color:'#5d7aa6',fontSize:11},inactiveColor:'#b9c9e2',itemWidth:14,itemHeight:8,itemGap:7},
+        grid:{left:46,right:14,top:30,bottom:26},
+        xAxis:{type:'category',data:MM,boundaryGap:false,axisLine:axL,axisLabel:{...axT,fontSize:11}},
+        yAxis:{type:'value',scale:true,splitLine:splL,axisLabel:{...axT,fontSize:11}},series});
+      const L=schLatest(co); const sub=document.getElementById('schsub_'+i);
+      if(L&&sub){ sub.innerHTML=`最新 ${L.y}年${L.m}月：${L.val}${unit}${pctSpan('当月同比',L.yoy)}${pctSpan('累计同比',L.ytd)}`; }
     });
+    setTimeout(()=>scheduleCharts.forEach(c=>c.resize()),0);
   }
-  drawAll();
-  document.querySelectorAll('.mbtn').forEach(b=>b.addEventListener('click',()=>{
-    schMode=b.dataset.mode;
-    document.querySelectorAll('.mbtn').forEach(x=>x.classList.toggle('active',x===b));
-    drawAll(); setTimeout(()=>scheduleCharts.forEach(c=>c.resize()),0);
+  document.querySelectorAll('#segtabs .mbtn').forEach(b=>b.addEventListener('click',()=>{
+    document.querySelectorAll('#segtabs .mbtn').forEach(x=>x.classList.toggle('active',x===b));
+    drawSeg(b.dataset.seg);
   }));
+  drawSeg(segs[0]);
 }
 
 // ================= 标签切换 =================
