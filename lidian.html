@@ -193,12 +193,13 @@ window.addEventListener('resize',()=>{dongliCharts.concat(priceCharts).concat(st
 const baseTip={trigger:'axis',backgroundColor:'#ffffff',borderColor:'#cfe0f5',textStyle:{color:'#16335f'}};
 const axL={lineStyle:{color:'#cfe0f5'}}, axT={color:'#5d7aa6'}, splL={lineStyle:{color:'#e3edf9'}};
 const nz=v=>(v===0||v==null)?null:v;
-function chgSpan(p,label,suffix){
+function chgSpan(p,label,suffix,bold){
   const su=suffix||'%';
-  if(p==null) return `<span class="chg" style="color:#5d7aa6">— <span style="color:#5d7aa6">${label}</span></span>`;
-  if(Math.abs(p)<0.05) return `<span class="chg" style="color:#8a97a8">▬ 0.0${su} <span style="color:#5d7aa6">${label}</span></span>`;
+  const w=s=>bold?`<b>${s}</b>`:s;
+  if(p==null) return `<span class="chg" style="color:#5d7aa6">${w('—')} <span style="color:#5d7aa6">${label}</span></span>`;
+  if(Math.abs(p)<0.05) return `<span class="chg" style="color:#8a97a8">${w('▬ 0.0'+su)} <span style="color:#5d7aa6">${label}</span></span>`;
   const cls=p>0?'up':'down', a=p>0?'▲':'▼';
-  return `<span class="chg ${cls}">${a} ${Math.abs(p).toFixed(1)}${su} <span style="color:#5d7aa6">${label}</span></span>`;
+  return `<span class="chg ${cls}">${w(a+' '+Math.abs(p).toFixed(1)+su)} <span style="color:#5d7aa6">${label}</span></span>`;
 }
 
 // ================= 动力需求 =================
@@ -511,15 +512,17 @@ function schYTD(co){ // 累计同比 {year:[12 ytd-yoy%]}
     out[y]=a; });
   return out;
 }
-function schLatest(co){ // {y,m,val,yoy,ytd}
+function schLatest(co){ // {y,m,val,mom,yoy,ytd}
   const yrs=Object.keys(co.years).sort(); const ly=yrs[yrs.length-1]; const arr=co.years[ly];
   let li=-1; for(let i=arr.length-1;i>=0;i--){if(arr[i]!=null){li=i;break;}}
   if(li<0) return null;
   const py=co.years[String(+ly-1)]; const pv=py?py[li]:null;
   const yoy=(pv!=null&&pv!==0)?(arr[li]-pv)/pv*100:null;
+  const prevV=(li>0)?arr[li-1]:(py?py[11]:null);  // 环比：同年上月，1月则取上年12月
+  const mom=(prevV!=null&&prevV!==0)?(arr[li]-prevV)/prevV*100:null;
   let cc=0,pc=0; for(let k=0;k<=li;k++){ if(arr[k]!=null)cc+=arr[k]; if(py&&py[k]!=null)pc+=py[k]; }
   const ytd=(pc>0)?(cc/pc-1)*100:null;
-  return {y:ly,m:li+1,val:arr[li],yoy,ytd};
+  return {y:ly,m:li+1,val:arr[li],mom,yoy,ytd};
 }
 function pctSpan(label,v){
   const c=(v==null)?'#5d7aa6':(Math.abs(v)<0.05?'#8a97a8':(v>0?'#e5484d':'#1f9d55'));
@@ -537,7 +540,7 @@ function renderSchedule(){
     return {unit:(S.segments.find(s=>s.seg===seg)||{}).unit, years};
   }
   const sk=S.segments.map(sg=>{ const L=schLatest(segAgg(sg.seg)); if(!L)return '';
-    return `<div class="kpi"><div class="label">${sg.seg}排产（${L.m}月）</div><div class="val">${(+L.val).toFixed(1)}<span class="unit">${sg.unit}</span></div>${chgSpan(L.yoy,'当月同比')}<br>${chgSpan(L.ytd,'累计同比')}</div>`;
+    return `<div class="kpi"><div class="label">${sg.seg}排产（${L.m}月）</div><div class="val">${(+L.val).toFixed(1)}<span class="unit">${sg.unit}</span></div>${chgSpan(L.mom,'环比',null,true)}<br>${chgSpan(L.yoy,'当月同比')}<br>${chgSpan(L.ytd,'累计同比')}</div>`;
   });
   document.getElementById('schkpis').innerHTML=sk.join('');
 
