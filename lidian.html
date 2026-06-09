@@ -175,8 +175,7 @@
     若有任何使用意见或修改建议，欢迎联系邵梓洋 13143711234
   </div>
   <div class="kpis" id="schkpis"></div>
-  <div class="sec green">分环节 · 分企业月度排产</div>
-  <div class="modetoggle" id="segtabs"></div>
+  <div class="sec green">分企业月度排产（各年同期对比）</div>
   <div id="schwrap"></div>
 </section>
 
@@ -510,23 +509,33 @@ function pctSpan(label,v){
 }
 function renderSchedule(){
   const S=SCHEDULE, MM=['1月','2月','3月','4月','5月','6月','7月','8月','9月','10月','11月','12月'];
-  // KPI：各环节龙头排产（对应月份）
-  const leaders=['宁德时代','比亚迪','湖南裕能','璞泰来','恩捷股份','天赐材料'];
-  const sk=[];
-  leaders.forEach(nm=>{ const c=S.companies.find(x=>x.name===nm); if(!c)return; const L=schLatest(c); if(!L)return;
-    sk.push(`<div class="kpi"><div class="label">${nm}（${L.m}月排产）</div><div class="val">${L.val}<span class="unit">${c.unit}</span></div>${chgSpan(L.yoy,'当月同比')}<br>${chgSpan(L.ytd,'累计同比')}</div>`); });
-  document.getElementById('schkpis').innerHTML=sk.slice(0,5).join('');
+  // —— KPI：5个环节总排产（剔除-内部重复口径）+ 当月/累计同比 ——
+  function segAgg(seg){
+    const cos=S.companies.filter(c=>c.seg===seg && !c.name.includes('-内部'));
+    const years={};
+    cos.forEach(c=>{Object.keys(c.years).forEach(y=>{ if(!years[y])years[y]=new Array(12).fill(null);
+      c.years[y].forEach((v,m)=>{ if(v!=null) years[y][m]=(years[y][m]==null?0:years[y][m])+v; }); });});
+    return {unit:(S.segments.find(s=>s.seg===seg)||{}).unit, years};
+  }
+  const sk=S.segments.map(sg=>{ const L=schLatest(segAgg(sg.seg)); if(!L)return '';
+    return `<div class="kpi"><div class="label">${sg.seg}排产（${L.m}月）</div><div class="val">${(+L.val).toFixed(1)}<span class="unit">${sg.unit}</span></div>${chgSpan(L.yoy,'当月同比')}<br>${chgSpan(L.ytd,'累计同比')}</div>`;
+  });
+  document.getElementById('schkpis').innerHTML=sk.join('');
 
-  // 环节选项卡
-  const segs=S.segments.map(s=>s.seg);
-  document.getElementById('segtabs').innerHTML=segs.map((s,i)=>`<button class="mbtn${i===0?' active':''}" data-seg="${s}">${s}排产</button>`).join('');
-
-  function drawSeg(seg){
-    const cos=S.companies.filter(c=>c.seg===seg);
-    scheduleCharts.forEach(ch=>{try{ch.dispose();}catch(e){}}); scheduleCharts.length=0;
-    document.getElementById('schwrap').innerHTML='<div class="schgrid">'+cos.map((c,i)=>`<div class="card"><h2>${c.name}（${c.unit}）</h2><div class="ch" id="schsub_${i}"></div><div class="chart" id="schc_${i}"></div></div>`).join('')+'</div>';
+  // —— 全部企业，按环节分组，一页平铺 ——
+  let html='';
+  S.segments.forEach(sg=>{
+    const cos=S.companies.filter(c=>c.seg===sg.seg); if(!cos.length)return;
+    html+=`<div class="seglabel">${sg.seg}（${sg.unit}）</div><div class="schgrid">`;
+    cos.forEach((c,i)=>{ html+=`<div class="card"><h2>${c.name}</h2><div class="ch" id="schsub_${c.seg}_${i}"></div><div class="chart" id="schc_${c.seg}_${i}"></div></div>`; });
+    html+='</div>';
+  });
+  document.getElementById('schwrap').innerHTML=html;
+  S.segments.forEach(sg=>{
+    const cos=S.companies.filter(c=>c.seg===sg.seg);
     cos.forEach((co,i)=>{
-      const el=document.getElementById('schc_'+i); const ch=echarts.init(el); scheduleCharts.push(ch);
+      const el=document.getElementById('schc_'+co.seg+'_'+i); if(!el)return;
+      const ch=echarts.init(el); scheduleCharts.push(ch);
       const yrs=Object.keys(co.years).sort(); const latest=yrs[yrs.length-1]; const unit=co.unit;
       const series=yrs.map(y=>{const hot=y===latest;const col=schColor(y);return {name:y+'年',type:'line',data:co.years[y],connectNulls:false,symbol:'circle',symbolSize:hot?5:3,lineStyle:{width:hot?3:1.6,color:col},itemStyle:{color:col},emphasis:{focus:'series'},z:hot?10:1};});
       ch.setOption({tooltip:{...baseTip,valueFormatter:v=>v==null?'-':(+v).toFixed(2)+unit},
@@ -534,16 +543,10 @@ function renderSchedule(){
         grid:{left:46,right:14,top:30,bottom:26},
         xAxis:{type:'category',data:MM,boundaryGap:false,axisLine:axL,axisLabel:{...axT,fontSize:11}},
         yAxis:{type:'value',scale:true,splitLine:splL,axisLabel:{...axT,fontSize:11}},series});
-      const L=schLatest(co); const sub=document.getElementById('schsub_'+i);
+      const L=schLatest(co); const sub=document.getElementById('schsub_'+co.seg+'_'+i);
       if(L&&sub){ sub.innerHTML=`最新 ${L.y}年${L.m}月：${L.val}${unit}${pctSpan('当月同比',L.yoy)}${pctSpan('累计同比',L.ytd)}`; }
     });
-    setTimeout(()=>scheduleCharts.forEach(c=>c.resize()),0);
-  }
-  document.querySelectorAll('#segtabs .mbtn').forEach(b=>b.addEventListener('click',()=>{
-    document.querySelectorAll('#segtabs .mbtn').forEach(x=>x.classList.toggle('active',x===b));
-    drawSeg(b.dataset.seg);
-  }));
-  drawSeg(segs[0]);
+  });
 }
 
 // ================= 标签切换 =================
