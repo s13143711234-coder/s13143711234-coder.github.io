@@ -138,7 +138,7 @@
   <div class="meta" style="margin-top:2px">注：仅统计 1MW 以上储能项目，统计口径低于美国实际装机总量。</div>
   <div class="grid">
     <div class="card"><h2>当月新增运行功率</h2><div class="ch">单位：GW · 各年同期对比</div><div id="us_power" class="chart"></div><div class="src">资料来源：EIA</div></div>
-    <div class="card"><h2>当月新增运行容量</h2><div class="ch">单位：GWh · 各年同期对比</div><div id="us_energy" class="chart"></div><div class="src">资料来源：EIA</div></div>
+    <div class="card"><h2>当月新增运行容量</h2><div class="ch">单位：GWh · 各年同期对比</div><div id="us_energy" class="chart"></div><div class="src">注：根据 SEIA，26Q1 美国储能新增装机 9.7GWh，同比 +32%</div><div class="src">资料来源：EIA</div></div>
   </div>
   <div class="sec" style="border-color:#8957e5">四、逆变器出口</div>
   <div class="grid">
@@ -591,7 +591,7 @@ function renderStorage(){
   // 美国大储装机明细（各年全年合计，GW/GWh）
   (function(){const yrs=Object.keys(P2.usPower).sort();
     const sum=arr=>{let s=0,has=false;arr.forEach(v=>{if(v!=null){s+=v;has=true;}});return has?s:null;};
-    const cols=[{t:'年份',f:y=>y},{t:'全年新增功率(GW)',f:y=>{const v=sum(P2.usPower[y]);return v==null?'-':(v/1000).toFixed(2);}},{t:'全年新增容量(GWh)',f:y=>{const v=sum(P2.usEnergy[y]);return v==null?'-':(v/1000).toFixed(2);}}];
+    const cols=[{t:'年份',f:y=>{const a=P2.usPower[y];let last=-1;for(let i=a.length-1;i>=0;i--){if(a[i]!=null){last=i;break;}}return last>=11?String(y):(y+'年1-'+(last+1)+'月');}},{t:'新增功率(GW)',f:y=>{const v=sum(P2.usPower[y]);return v==null?'-':(v/1000).toFixed(2);}},{t:'新增容量(GWh)',f:y=>{const v=sum(P2.usEnergy[y]);return v==null?'-':(v/1000).toFixed(2);}}];
     const uth='<thead><tr>'+cols.map(c=>`<th>${c.t}</th>`).join('')+'</tr></thead>';
     const utb='<tbody>'+yrs.slice().reverse().map(y=>'<tr>'+cols.map(c=>`<td>${c.f(y)}</td>`).join('')+'</tr>').join('')+'</tbody>';
     document.getElementById('us_table').innerHTML=uth+utb;
