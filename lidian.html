@@ -204,9 +204,11 @@ const baseTip={trigger:'axis',backgroundColor:'#ffffff',borderColor:'#cfe0f5',te
 const axL={lineStyle:{color:'#cfe0f5'}}, axT={color:'#5d7aa6'}, splL={lineStyle:{color:'#e3edf9'}};
 const nz=v=>(v===0||v==null)?null:v;
 function chgSpan(p,label,suffix){
-  if(p==null) return `<span class="chg" style="color:#5d7aa6">—</span>`;
-  const cls=p>=0?'up':'down', a=p>=0?'▲':'▼';
-  return `<span class="chg ${cls}">${a} ${Math.abs(p).toFixed(1)}${suffix||'%'} <span style="color:#5d7aa6">${label}</span></span>`;
+  const su=suffix||'%';
+  if(p==null) return `<span class="chg" style="color:#5d7aa6">— <span style="color:#5d7aa6">${label}</span></span>`;
+  if(Math.abs(p)<0.05) return `<span class="chg" style="color:#8a97a8">▬ 0.0${su} <span style="color:#5d7aa6">${label}</span></span>`;
+  const cls=p>0?'up':'down', a=p>0?'▲':'▼';
+  return `<span class="chg ${cls}">${a} ${Math.abs(p).toFixed(1)}${su} <span style="color:#5d7aa6">${label}</span></span>`;
 }
 
 // ================= 动力需求 =================
@@ -318,14 +320,15 @@ function chgSpan(p,label,suffix){
   const pctChg=(c,b)=>(b==null||b===0)?null:(c-b)/b*100;
   const euLN=(()=>{for(let i=EUROPE.total.length-1;i>=0;i--)if(EUROPE.total[i]!=null)return i;return -1;})();
   const usYtd=regYTD(USEM.us.sales), emYtd=regYTD(USEM.em.sales);
+  const moOf=ym=>+ym.slice(5,7);
   const kpis=[
-    {label:'国内新能源乘用车零售销量（最新月）',val:last.nevPv.toFixed(1),unit:'万辆',yoy:last.nevPvYoY,ytd:last.nevPvYtd},
-    {label:'国内新能源商用车销量（最新月）',val:last.nevCv.toFixed(1),unit:'万辆',yoy:last.nevCvYoY,ytd:last.cvYtd},
-    {label:'欧洲新能源车销量（最新月）',val:EUROPE.total[euLN].toFixed(1),unit:'万辆',yoy:EUROPE.yoy[euLN],ytd:EUROPE.ytd[euLN]},
-    {label:'美国新能源车销量（最新月）',val:USEM.us.sales[usLN].toFixed(1),unit:'万辆',yoy:USEM.us.yoy[usLN],ytd:usYtd[usLN]},
-    {label:'新兴市场新能源车销量（最新月）',val:USEM.em.sales[emLN].toFixed(1),unit:'万辆',yoy:USEM.em.yoy[emLN],ytd:emYtd[emLN]},
+    {label:'国内新能源乘用车零售销量',mon:last.month,val:last.nevPv.toFixed(1),unit:'万辆',yoy:last.nevPvYoY,ytd:last.nevPvYtd},
+    {label:'国内新能源商用车销量',mon:last.month,val:last.nevCv.toFixed(1),unit:'万辆',yoy:last.nevCvYoY,ytd:last.cvYtd},
+    {label:'欧洲新能源车销量',mon:moOf(EUROPE.months[euLN]),val:EUROPE.total[euLN].toFixed(1),unit:'万辆',yoy:EUROPE.yoy[euLN],ytd:EUROPE.ytd[euLN]},
+    {label:'美国新能源车销量',mon:moOf(USEM.months[usLN]),val:USEM.us.sales[usLN].toFixed(1),unit:'万辆',yoy:USEM.us.yoy[usLN],ytd:usYtd[usLN]},
+    {label:'新兴市场新能源车销量',mon:moOf(USEM.months[emLN]),val:USEM.em.sales[emLN].toFixed(1),unit:'万辆',yoy:USEM.em.yoy[emLN],ytd:emYtd[emLN]},
   ];
-  document.getElementById('kpis').innerHTML=kpis.map(k=>`<div class="kpi"><div class="label">${k.label}</div><div class="val">${k.val}<span class="unit">${k.unit}</span></div>${chgSpan(k.yoy,'当月同比')}<br>${chgSpan(k.ytd,'累计同比')}</div>`).join('');
+  document.getElementById('kpis').innerHTML=kpis.map(k=>`<div class="kpi"><div class="label">${k.label}（${k.mon}月）</div><div class="val">${k.val}<span class="unit">${k.unit}</span></div>${chgSpan(k.yoy,'当月同比')}<br>${chgSpan(k.ytd,'累计同比')}</div>`).join('');
 
   const cols=[{k:'ym',t:'月份',d:0},{k:'nevPv',t:'新能源乘用车零售(万辆)',d:1},{k:'nevPvPen',t:'乘用车渗透率(%)',d:1},{k:'nevPvYoY',t:'乘用车当月同比(%)',d:1},{k:'nevPvYtd',t:'乘用车累计同比(%)',d:1,z:1},{k:'nevCv',t:'新能源商用车(万辆)',d:1},{k:'cvPen',t:'商用车渗透率(%)',d:1},{k:'nevCvYoY',t:'商用车当月同比(%)',d:1},{k:'cvYtd',t:'商用车累计同比(%)',d:1},{k:'batBevPv',t:'纯电乘用车带电(kWh)',d:1},{k:'batPhevPv',t:'插混乘用车带电(kWh)',d:1},{k:'battInstall',t:'动力电池装车(GWh)',d:1}];
   const th='<thead><tr>'+cols.map(c=>`<th>${c.t}</th>`).join('')+'</tr></thead>';
@@ -443,14 +446,15 @@ function renderStorage(){
   priceChart('sp_epc','EPC',S.epc2,S.epc4,'储能EPC-2h','储能EPC-4h');
 
   // KPI
+  const moOf=ym=>+ym.slice(5,7);
   const li=lastNN(S.scale);
+  const sysLi=lastNN(S.sys2), epcLi=lastNN(S.epc2);
   const k=[
-    {label:'招中标规模（最新月）',val:S.scale[li].toFixed(1),unit:'GWh',chg:chgSpan(S.scaleYoY[li],'当月同比')},
-    {label:'招中标规模 环比',val:(S.scaleMoM[li]>=0?'+':'')+S.scaleMoM[li].toFixed(1),unit:'%',chg:`<span class="chg" style="color:#5d7aa6">${M[li]}</span>`},
-    {label:'储能系统-2h 中标价（最新）',val:S.sys2[lastNN(S.sys2)].toFixed(3),unit:'元/Wh',chg:`<span class="chg" style="color:#5d7aa6">含税</span>`},
-    {label:'储能EPC-2h 中标价（最新）',val:S.epc2[lastNN(S.epc2)].toFixed(3),unit:'元/Wh',chg:`<span class="chg" style="color:#5d7aa6">含税</span>`},
+    {label:'招中标规模',mon:moOf(M[li]),val:S.scale[li].toFixed(1),unit:'GWh',chg:chgSpan(S.scaleYoY[li],'当月同比')+'<br>'+chgSpan(S.scaleMoM[li],'环比')},
+    {label:'储能系统-2h 中标价',mon:moOf(M[sysLi]),val:S.sys2[sysLi].toFixed(3),unit:'元/Wh',chg:chgSpan(pYoY(S.sys2)[sysLi],'同比')+'<br>'+chgSpan(pMoM(S.sys2)[sysLi],'环比')},
+    {label:'储能EPC-2h 中标价',mon:moOf(M[epcLi]),val:S.epc2[epcLi].toFixed(3),unit:'元/Wh',chg:chgSpan(pYoY(S.epc2)[epcLi],'同比')+'<br>'+chgSpan(pMoM(S.epc2)[epcLi],'环比')},
   ];
-  document.getElementById('skpis').innerHTML=k.map(x=>`<div class="kpi"><div class="label">${x.label}</div><div class="val">${x.val}<span class="unit">${x.unit}</span></div>${x.chg}</div>`).join('');
+  document.getElementById('skpis').innerHTML=k.map(x=>`<div class="kpi"><div class="label">${x.label}（${x.mon}月）</div><div class="val">${x.val}<span class="unit">${x.unit}</span></div>${x.chg}</div>`).join('');
 
   // 明细表
   const cols=[{t:'月份',f:i=>M[i]},{t:'招中标规模(GWh)',f:i=>fmt(S.scale[i],1)},{t:'当月同比(%)',f:i=>fmt(S.scaleYoY[i],1)},{t:'环比(%)',f:i=>fmt(S.scaleMoM[i],1)},{t:'EPC-2h(元/Wh)',f:i=>fmt(S.epc2[i],3)},{t:'EPC-4h',f:i=>fmt(S.epc4[i],3)},{t:'系统-2h',f:i=>fmt(S.sys2[i],3)},{t:'系统-4h',f:i=>fmt(S.sys4[i],3)}];
@@ -526,7 +530,7 @@ function renderSchedule(){
           yAxis:{type:'value',scale:true,splitLine:splL,axisLabel:{...axT,fontSize:11,formatter:isPct?'{value}%':'{value}'}},series},true);
         const L=schLatest(co);
         const sub=document.getElementById('schsub_'+co.seg+'_'+i);
-        if(L && sub){ const ph=L.yoy==null?'':`，同比 <b style="color:${L.yoy>=0?'#e5484d':'#1f9d55'}">${L.yoy>=0?'+':''}${L.yoy.toFixed(1)}%</b>`; sub.innerHTML=`最新 ${L.y}年${L.m}月：${L.val}${co.unit}${ph}`; }
+        if(L && sub){ const yc=(L.yoy==null)?'#5d7aa6':(Math.abs(L.yoy)<0.05?'#8a97a8':(L.yoy>0?'#e5484d':'#1f9d55')); const ph=L.yoy==null?'':`，同比 <b style="color:${yc}">${L.yoy>0?'+':''}${L.yoy.toFixed(1)}%</b>`; sub.innerHTML=`最新 ${L.y}年${L.m}月：${L.val}${co.unit}${ph}`; }
       });
     });
   }
