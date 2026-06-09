@@ -120,7 +120,7 @@
 <!-- ============ TAB 2: 储能需求 ============ -->
 <section id="tab-storage" class="tabpane">
   <div class="meta">
-    数据区间：<b id="srange"></b>&nbsp;·&nbsp;频率：月度&nbsp;·&nbsp;来源：寻熵研究院<br>
+    数据区间：<b id="srange"></b>&nbsp;·&nbsp;频率：月度&nbsp;·&nbsp;来源：寻熵研究院 / EIA / 海关总署<br>
     招中标规模＝国内储能招中标合计（GWh）；中标价格为含税口径（元/Wh），4小时产品自 2025 年起有数据。<br>
     若有任何使用意见或修改建议，欢迎联系邵梓洋 13143711234
   </div>
@@ -137,17 +137,21 @@
   <div class="sec red">三、美国大储装机（EIA）</div>
   <div class="meta" style="margin-top:2px">注：仅统计 1MW 以上储能项目，统计口径低于美国实际装机总量。</div>
   <div class="grid">
-    <div class="card"><h2>当月新增运行功率</h2><div class="ch">单位：MW · 各年同期对比</div><div id="us_power" class="chart"></div><div class="src">资料来源：EIA</div></div>
-    <div class="card"><h2>当月新增运行容量</h2><div class="ch">单位：MWh · 各年同期对比</div><div id="us_energy" class="chart"></div><div class="src">资料来源：EIA</div></div>
+    <div class="card"><h2>当月新增运行功率</h2><div class="ch">单位：GW · 各年同期对比</div><div id="us_power" class="chart"></div><div class="src">资料来源：EIA</div></div>
+    <div class="card"><h2>当月新增运行容量</h2><div class="ch">单位：GWh · 各年同期对比</div><div id="us_energy" class="chart"></div><div class="src">资料来源：EIA</div></div>
   </div>
   <div class="sec" style="border-color:#8957e5">四、逆变器出口</div>
   <div class="grid">
-    <div class="card full"><h2>逆变器出口金额</h2><div class="ch">单位：亿美元 · 连续时间轴 · 悬停看当月同比/环比（可框选缩放）</div><div id="inv_amt" class="chart"></div><div class="src">资料来源：海关统计数据平台</div></div>
+    <div class="card full"><h2>逆变器出口金额（各年同期对比）</h2><div class="ch">单位：亿美元 · 2021 年起 · 各年同期对比 · 悬停看当月同比/环比</div><div id="inv_amt" class="chart"></div><div class="src">资料来源：海关总署</div></div>
   </div>
   <div class="sec">五、明细数据</div>
   <div class="grid">
-    <div class="card full"><div class="ch">最新月份在最上方（横向可滑动）</div>
+    <div class="card full"><div class="ch">国内招中标规模与中标价格（寻熵研究院）· 最新月在最上方（横向可滑动）</div>
       <div class="tablewrap"><table id="stable"></table></div></div>
+    <div class="card full"><div class="ch">美国大储装机（EIA）· 各年全年合计（最新年为当年累计）</div>
+      <div class="tablewrap"><table id="us_table"></table></div></div>
+    <div class="card full"><div class="ch">逆变器出口（海关总署）· 2021 年起 · 最新月在最上方</div>
+      <div class="tablewrap"><table id="inv_table"></table></div></div>
   </div>
 </section>
 
@@ -498,6 +502,7 @@ function renderStorage(){
   const S=STORAGE, M=S.months;
   const yrs=[...new Set(S.year)].sort();
   const pal=['#9aa4b2','#1f6feb','#1f9d55','#f85149','#d29922'];
+  const lpal=['#9aa4b2','#1f6feb','#1f9d55','#d29922','#16a3a3','#8957e5','#5f8bce','#3a6cc0','#5a6b85'];
   const latest=yrs[yrs.length-1];
   const MM=['1月','2月','3月','4月','5月','6月','7月','8月','9月','10月','11月','12月'];
   document.getElementById('srange').textContent=M[0]+' ~ '+M[M.length-1];
@@ -556,20 +561,25 @@ function renderStorage(){
   // 美国大储装机（EIA）各年同期对比
   function usSeasonal(id,byYear,unit){
     const yrs=Object.keys(byYear).sort(), yl=yrs[yrs.length-1];
-    const series=yrs.map((y,i)=>{const hot=y===yl;return{name:y+'年',type:'line',data:byYear[y],connectNulls:false,symbol:'circle',symbolSize:hot?6:4,lineStyle:{width:hot?3.5:1.8,color:pal[i%pal.length]},itemStyle:{color:pal[i%pal.length]},emphasis:{focus:'series'},z:hot?10:1};});
-    mk(id,{color:pal,tooltip:{...baseTip,valueFormatter:v=>v==null?'-':(+v).toFixed(0)+unit},legend:{top:0,right:0,type:'scroll',textStyle:{color:'#5d7aa6',fontSize:11},inactiveColor:'#b9c9e2',itemWidth:16,itemHeight:9},grid:{left:56,right:18,top:36,bottom:30},xAxis:{type:'category',data:MM,boundaryGap:false,axisLine:axL,axisLabel:axT},yAxis:{type:'value',scale:true,splitLine:splL,axisLabel:axT},series},storageCharts);
+    const series=yrs.map((y,i)=>{const hot=y===yl,col=hot?'#e5484d':lpal[i%lpal.length];return{name:y+'年',type:'line',data:byYear[y],connectNulls:false,symbol:'circle',symbolSize:hot?6:4,lineStyle:{width:hot?3.5:1.8,color:col},itemStyle:{color:col},emphasis:{focus:'series'},z:hot?10:1};});
+    mk(id,{color:pal,tooltip:{...baseTip,valueFormatter:v=>v==null?'-':(+v).toFixed(2)+unit},legend:{top:0,right:0,type:'scroll',textStyle:{color:'#5d7aa6',fontSize:11},inactiveColor:'#b9c9e2',itemWidth:16,itemHeight:9},grid:{left:56,right:18,top:36,bottom:30},xAxis:{type:'category',data:MM,boundaryGap:false,axisLine:axL,axisLabel:axT},yAxis:{type:'value',scale:true,splitLine:splL,axisLabel:axT},series},storageCharts);
   }
-  usSeasonal('us_power',P2.usPower,' MW');
-  usSeasonal('us_energy',P2.usEnergy,' MWh');
+  const divObj=(o,d)=>{const r={};Object.keys(o).forEach(y=>{r[y]=o[y].map(v=>v==null?null:+(v/d).toFixed(3));});return r;};
+  usSeasonal('us_power',divObj(P2.usPower,1000),' GW');
+  usSeasonal('us_energy',divObj(P2.usEnergy,1000),' GWh');
 
-  // 逆变器出口金额（折线，悬停看当月同比/环比）
-  (function(){const I=P2.inverter;const f=x=>x==null?null:((x>=0?'+':'')+(+x).toFixed(1)+'%');
-    mk('inv_amt',{tooltip:{...baseTip,formatter:ps=>{if(!ps.length)return'';const i=ps[0].dataIndex;const parts=[];const yo=f(I.yoy[i]),mm=f(I.mom[i]);if(yo!=null)parts.push('当月同比'+yo);if(mm!=null)parts.push('环比'+mm);const ex=parts.length?`　<span style="color:#8b98a8">${parts.join(' · ')}</span>`:'';return `${ps[0].axisValue}<br>${ps[0].marker}出口金额：${I.amount[i]==null?'-':(+I.amount[i]).toFixed(2)}亿美元${ex}`;}},
-      grid:{left:48,right:18,top:18,bottom:54},
-      xAxis:{type:'category',data:I.months,axisLine:axL,axisLabel:{...axT,hideOverlap:true}},
+  // 逆变器出口金额（各年同期对比，2021起，悬停看当月同比/环比）
+  (function(){const I=P2.inverter;
+    const byYM={};I.months.forEach((m,i)=>{const y=m.slice(0,4),mo=+m.slice(5,7);(byYM[y]=byYM[y]||{})[mo]={amt:I.amount[i],yoy:I.yoy[i],mom:I.mom[i]};});
+    const yrs=Object.keys(byYM).filter(y=>+y>=2021).sort(), yl=yrs[yrs.length-1];
+    const f=x=>x==null?null:((x>=0?'+':'')+(+x).toFixed(1)+'%');
+    const series=yrs.map((y,i)=>{const arr=new Array(12).fill(null);for(let mo=1;mo<=12;mo++){if(byYM[y][mo])arr[mo-1]=byYM[y][mo].amt;}const hot=y===yl,col=hot?'#e5484d':lpal[i%lpal.length];return{name:y+'年',type:'line',data:arr,connectNulls:false,symbol:'circle',symbolSize:hot?6:4,lineStyle:{width:hot?3.5:1.8,color:col},itemStyle:{color:col},emphasis:{focus:'series'},z:hot?10:1};});
+    mk('inv_amt',{color:pal,tooltip:{...baseTip,formatter:ps=>{if(!ps.length)return'';const mo=ps[0].dataIndex+1;let s=ps[0].axisValue+'<br>';ps.forEach(p=>{const y=p.seriesName.slice(0,-1),d=(byYM[y]||{})[mo];if(!d||d.amt==null){s+=`${p.marker}${p.seriesName}：-<br>`;return;}const parts=[],yo=f(d.yoy),mm=f(d.mom);if(yo!=null)parts.push('当月同比'+yo);if(mm!=null)parts.push('环比'+mm);const ex=parts.length?`　<span style="color:#8b98a8">${parts.join(' · ')}</span>`:'';s+=`${p.marker}${p.seriesName}：${(+d.amt).toFixed(2)}亿美元${ex}<br>`;});return s;}},
+      legend:{top:0,right:0,type:'scroll',textStyle:{color:'#5d7aa6',fontSize:11},inactiveColor:'#b9c9e2',itemWidth:16,itemHeight:9},
+      grid:{left:50,right:18,top:36,bottom:30},
+      xAxis:{type:'category',data:MM,boundaryGap:false,axisLine:axL,axisLabel:axT},
       yAxis:{type:'value',name:'亿美元',scale:true,splitLine:splL,axisLabel:axT,nameTextStyle:{color:'#5d7aa6',align:'right'},nameGap:8},
-      dataZoom:[{type:'inside',startValue:'2022-01'},{type:'slider',height:16,bottom:8,borderColor:'#cfe0f5',textStyle:{color:'#5d7aa6'},fillerColor:'rgba(31,111,235,.12)',startValue:'2022-01'}],
-      series:[{name:'出口金额',type:'line',smooth:true,showSymbol:false,connectNulls:false,data:I.amount,lineStyle:{width:2.4,color:'#1f6feb'},areaStyle:{color:'rgba(31,111,235,.08)'}}]},storageCharts);
+      series},storageCharts);
   })();
 
   // 明细表
@@ -577,6 +587,23 @@ function renderStorage(){
   const th='<thead><tr>'+cols.map(c=>`<th>${c.t}</th>`).join('')+'</tr></thead>';
   const tb='<tbody>'+[...M.keys()].reverse().map(i=>'<tr>'+cols.map(c=>`<td>${c.f(i)}</td>`).join('')+'</tr>').join('')+'</tbody>';
   document.getElementById('stable').innerHTML=th+tb;
+
+  // 美国大储装机明细（各年全年合计，GW/GWh）
+  (function(){const yrs=Object.keys(P2.usPower).sort();
+    const sum=arr=>{let s=0,has=false;arr.forEach(v=>{if(v!=null){s+=v;has=true;}});return has?s:null;};
+    const cols=[{t:'年份',f:y=>y},{t:'全年新增功率(GW)',f:y=>{const v=sum(P2.usPower[y]);return v==null?'-':(v/1000).toFixed(2);}},{t:'全年新增容量(GWh)',f:y=>{const v=sum(P2.usEnergy[y]);return v==null?'-':(v/1000).toFixed(2);}}];
+    const uth='<thead><tr>'+cols.map(c=>`<th>${c.t}</th>`).join('')+'</tr></thead>';
+    const utb='<tbody>'+yrs.slice().reverse().map(y=>'<tr>'+cols.map(c=>`<td>${c.f(y)}</td>`).join('')+'</tr>').join('')+'</tbody>';
+    document.getElementById('us_table').innerHTML=uth+utb;
+  })();
+  // 逆变器出口明细（2021起，最新在上）
+  (function(){const I=P2.inverter;const idxs=[];I.months.forEach((m,i)=>{if(+m.slice(0,4)>=2021)idxs.push(i);});idxs.reverse();
+    const ff=(v,d)=>v==null?'-':(+v).toFixed(d);
+    const cols=[{t:'月份',f:i=>I.months[i]},{t:'出口金额(亿美元)',f:i=>ff(I.amount[i],2)},{t:'当月同比(%)',f:i=>ff(I.yoy[i],1)},{t:'环比(%)',f:i=>ff(I.mom[i],1)}];
+    const ith='<thead><tr>'+cols.map(c=>`<th>${c.t}</th>`).join('')+'</tr></thead>';
+    const itb='<tbody>'+idxs.map(i=>'<tr>'+cols.map(c=>`<td>${c.f(i)}</td>`).join('')+'</tr>').join('')+'</tbody>';
+    document.getElementById('inv_table').innerHTML=ith+itb;
+  })();
 }
 
 // ================= 锂电排产（懒加载） =================
