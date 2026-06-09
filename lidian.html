@@ -44,6 +44,7 @@
   .card{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:18px 20px 8px;box-shadow:0 4px 16px rgba(31,111,235,.07)}
   .card h2{font-size:16px;font-weight:600;margin-bottom:2px}
   .card .ch{color:var(--sub);font-size:12.5px;margin-bottom:10px}
+  .card .src{color:var(--sub);font-size:11.5px;margin:4px 2px 6px;text-align:right;opacity:.85}
   .chart{width:100%;height:340px}
   .full{grid-column:1/-1}
   .tablewrap{max-height:460px;overflow:auto;border-radius:10px;border:1px solid var(--line)}
@@ -71,35 +72,35 @@
   <div class="meta">
     数据区间：<b id="range"></b>&nbsp;·&nbsp;频率：月度&nbsp;·&nbsp;来源：乘联会 / 中汽协 / 新闻整理（带电量）/ 欧洲为各国行业协会汇总<br>
     国内乘用车=零售口径，商用车=销量口径；商用车渗透率＝新能源商用车÷商用车总量，累计同比为月度累加测算。欧洲为 BEV+PHEV 合计销量（数据起 2024-01）。<br>
-    <b style="color:var(--accent2)">若有任何使用意见或修改建议，欢迎联系邵梓洋 13143711234</b>
+    若有任何使用意见或修改建议，欢迎联系邵梓洋 13143711234
   </div>
   <div class="kpis" id="kpis"></div>
   <div class="sec green">一、国内新能源乘用车</div>
   <div class="grid">
-    <div class="card"><h2>零售销量</h2><div class="ch">单位：万辆 · 各年同期对比</div><div id="pv1" class="chart"></div></div>
-    <div class="card"><h2>零售渗透率</h2><div class="ch">单位：% · 各年同期对比</div><div id="pv2" class="chart"></div></div>
-    <div class="card full"><h2>当月同比 & 累计同比</h2><div class="ch">单位：% · 连续时间轴</div><div id="pv3" class="chart"></div></div>
+    <div class="card"><h2>零售销量</h2><div class="ch">单位：万辆 · 各年同期对比</div><div id="pv1" class="chart"></div><div class="src">资料来源：乘联会</div></div>
+    <div class="card"><h2>零售渗透率</h2><div class="ch">单位：% · 各年同期对比</div><div id="pv2" class="chart"></div><div class="src">资料来源：乘联会</div></div>
+    <div class="card full"><h2>当月同比 & 累计同比</h2><div class="ch">单位：% · 连续时间轴</div><div id="pv3" class="chart"></div><div class="src">资料来源：乘联会</div></div>
   </div>
   <div class="sec">二、国内新能源商用车</div>
   <div class="grid">
-    <div class="card"><h2>销量</h2><div class="ch">单位：万辆 · 各年同期对比</div><div id="cv1" class="chart"></div></div>
-    <div class="card"><h2>渗透率（测算）</h2><div class="ch">单位：% · 新能源商用车÷商用车总量 · 各年同期对比</div><div id="cv2" class="chart"></div></div>
-    <div class="card full"><h2>当月同比 & 累计同比（测算）</h2><div class="ch">单位：% · 连续时间轴</div><div id="cv3" class="chart"></div></div>
+    <div class="card"><h2>销量</h2><div class="ch">单位：万辆 · 各年同期对比</div><div id="cv1" class="chart"></div><div class="src">资料来源：中汽协</div></div>
+    <div class="card"><h2>渗透率（测算）</h2><div class="ch">单位：% · 新能源商用车÷商用车总量 · 各年同期对比</div><div id="cv2" class="chart"></div><div class="src">资料来源：中汽协（页面测算）</div></div>
+    <div class="card full"><h2>当月同比 & 累计同比（测算）</h2><div class="ch">单位：% · 连续时间轴</div><div id="cv3" class="chart"></div><div class="src">资料来源：中汽协（页面测算）</div></div>
   </div>
   <div class="sec gold">三、国内单车平均带电量</div>
   <div class="grid">
-    <div class="card"><h2>乘用车（纯电 / 插混）</h2><div class="ch">单位：kWh/台 · 连续时间轴</div><div id="bat1" class="chart"></div></div>
-    <div class="card"><h2>商用车（客车 / 专用车）</h2><div class="ch">单位：kWh/台 · 连续时间轴</div><div id="bat2" class="chart"></div></div>
+    <div class="card"><h2>乘用车（纯电 / 插混）</h2><div class="ch">单位：kWh/台 · 连续时间轴</div><div id="bat1" class="chart"></div><div class="src">资料来源：根据新闻整理</div></div>
+    <div class="card"><h2>商用车（客车 / 专用车）</h2><div class="ch">单位：kWh/台 · 连续时间轴</div><div id="bat2" class="chart"></div><div class="src">资料来源：根据新闻整理</div></div>
   </div>
   <div class="sec red">四、国内动力电池装车量</div>
   <div class="grid">
-    <div class="card full"><h2>动力电池装车量</h2><div class="ch">单位：GWh · 各年同期对比</div><div id="batt" class="chart"></div></div>
+    <div class="card full"><h2>动力电池装车量</h2><div class="ch">单位：GWh · 各年同期对比</div><div id="batt" class="chart"></div><div class="src">资料来源：中国汽车动力电池产业创新联盟</div></div>
   </div>
   <div class="sec" style="border-color:#8957e5">五、欧洲新能源车</div>
   <div class="grid">
-    <div class="card"><h2>欧洲新能源车销量结构&BEV渗透率</h2><div class="ch">左轴：万辆（BEV+PHEV 叠柱）· 右轴：BEV渗透率%（BEV÷合计）· 连续时间轴</div><div id="eu1" class="chart"></div></div>
-    <div class="card"><h2>欧洲新能源车销量</h2><div class="ch">单位：万辆 · 各年同期对比</div><div id="eu2" class="chart"></div></div>
-    <div class="card full"><h2>当月同比 & 累计同比</h2><div class="ch">单位：% · 连续时间轴（2025 年起有同比）</div><div id="eu3" class="chart"></div></div>
+    <div class="card"><h2>欧洲新能源车销量结构&BEV渗透率</h2><div class="ch">左轴：万辆（BEV+PHEV 叠柱）· 右轴：BEV渗透率%（BEV÷合计）· 连续时间轴</div><div id="eu1" class="chart"></div><div class="src">资料来源：各国行业协会汇总</div></div>
+    <div class="card"><h2>欧洲新能源车销量</h2><div class="ch">单位：万辆 · 各年同期对比</div><div id="eu2" class="chart"></div><div class="src">资料来源：各国行业协会汇总</div></div>
+    <div class="card full"><h2>当月同比 & 累计同比</h2><div class="ch">单位：% · 连续时间轴（2025 年起有同比）</div><div id="eu3" class="chart"></div><div class="src">资料来源：各国行业协会汇总</div></div>
   </div>
   <div class="sec">六、明细数据</div>
   <div class="grid">
@@ -113,7 +114,7 @@
   <div class="meta">
     数据区间：<b id="srange"></b>&nbsp;·&nbsp;频率：月度&nbsp;·&nbsp;来源：寻熵研究院<br>
     招中标规模＝国内储能招中标合计（GWh）；中标价格为含税口径（元/Wh），4小时产品自 2025 年起有数据。<br>
-    <span style="color:#58a6ff">若有任何使用意见或修改建议，欢迎联系邵梓洋 13143711234</span>
+    若有任何使用意见或修改建议，欢迎联系邵梓洋 13143711234
   </div>
   <div class="kpis" id="skpis"></div>
   <div class="sec green">一、国内储能招中标规模</div>
@@ -135,9 +136,10 @@
 <!-- ============ TAB 3: 材料价格 ============ -->
 <section id="tab-price" class="tabpane">
   <div class="meta">
+    资料来源：鑫椤资讯<br>
     数据区间：<b id="prange"></b>&nbsp;·&nbsp;频率：月度<br>
     单位：磷酸铁锂 / 负极 / 电解液 / 六氟磷酸锂 / 铜箔·铝箔加工费 ＝ <b>万元/吨</b>；湿法隔膜 ＝ <b>元/㎡</b>。部分品种起始较晚，按断点处理。<br>
-    <span style="color:#58a6ff">若有任何使用意见或修改建议，欢迎联系邵梓洋 13143711234</span>
+    若有任何使用意见或修改建议，欢迎联系邵梓洋 13143711234
   </div>
   <div class="kpis" id="pkpis"></div>
   <div class="sec gold">价格总览（归一化对比）</div>
@@ -158,7 +160,7 @@
   <div class="meta">
     数据区间：2021-01 ~ 2026-06&nbsp;·&nbsp;频率：月度&nbsp;·&nbsp;来源：鑫椤资讯（宁德额外含内部口径）<br>
     各企业月度排产、各年同期对比（每年一条折线）。复合产能（如「铁锂+三元」）按各类型加总为总产量。单位：电池 GWh、正极/负极/电解液 万吨、隔膜 亿平。<br>
-    <span style="color:#58a6ff">若有任何使用意见或修改建议，欢迎联系邵梓洋 13143711234</span>
+    若有任何使用意见或修改建议，欢迎联系邵梓洋 13143711234
   </div>
   <div class="kpis" id="schkpis"></div>
   <div class="sec green">分企业月度排产</div>
