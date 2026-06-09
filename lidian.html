@@ -65,7 +65,7 @@
   <button class="tab" data-tab="storage">② 储能需求跟踪</button>
   <button class="tab" data-tab="price">③ 锂电材料价格</button>
   <button class="tab" data-tab="schedule">④ 锂电排产跟踪</button>
-  <button class="tab" data-tab="demand">⑤ 需求测算</button>
+  <button class="tab" data-tab="demand">⑤ 锂电需求预测</button>
 </div>
 
 <!-- ============ TAB 1: 动力需求 ============ -->
@@ -177,7 +177,7 @@
 <!-- ============ TAB 5: 需求测算 ============ -->
 <section id="tab-demand" class="tabpane">
   <div class="meta">
-    数据区间：<b>2017 ~ 2030E</b>&nbsp;·&nbsp;频率：年度&nbsp;·&nbsp;来源：华泰电新需求测算<br>
+    数据区间：<b>2017 ~ 2030E</b>&nbsp;·&nbsp;频率：年度&nbsp;·&nbsp;来源：华泰研究测算<br>
     2026 年起为预测值（图中以浅色阴影标注「预测」区）。单位见各图标题；YoY／渗透率／产能利用率为右轴百分比。<br>
     若有任何使用意见或修改建议，欢迎联系邵梓洋 13143711234
   </div>
@@ -660,15 +660,18 @@ function renderDemand(){
       series:ser},demandCharts);
   }
 
-  // —— KPI（2025 实际 + 2030E 预测 + CAGR）——
-  const cagr=(a,b,n)=>(a>0&&b>0)?(Math.pow(b/a,1/n)-1)*100:null;
+  // —— KPI（2026E 预测值 + 较 2025 同比）——
+  const at=(arr,yrs,y)=>arr[yrs.map(String).indexOf(y)];
   const kdef=[
-    {label:'全球电池需求',arr:D.bat.total,yrs:D.bat.years,unit:'GWh'},
-    {label:'全球电动车销量',arr:D.ev.global,yrs:D.ev.years,unit:'万辆'},
-    {label:'全球动力装机量',arr:D.install.total,yrs:D.install.years,unit:'GWh'},
-    {label:'全球储能装机',arr:D.es.global,yrs:D.es.years,unit:'GWh'}
+    {label:'电池总需求',arr:D.bat.total,yrs:D.bat.years,unit:'GWh'},
+    {label:'储能电池出货量',arr:D.es.shipment,yrs:D.bat.years,unit:'GWh'},
+    {label:'动力电池出货量',arr:D.bat.dongli,yrs:D.bat.years,unit:'GWh'},
+    {label:'国内新能源车销量',arr:D.ev.china,yrs:D.ev.years,unit:'万辆'},
+    {label:'欧洲新能源车销量',arr:D.ev.eu,yrs:D.ev.years,unit:'万辆'},
+    {label:'美国新能源车销量',arr:D.usEV.sales,yrs:D.usEV.years,unit:'万辆'},
+    {label:'新兴市场新能源车销量',arr:D.ev.other,yrs:D.ev.years,unit:'万辆'}
   ];
-  document.getElementById('dmkpis').innerHTML=kdef.map(k=>{const ys=k.yrs.map(String),i25=ys.indexOf('2025'),i30=ys.indexOf('2030E');const v25=k.arr[i25],v30=k.arr[i30];const cg=cagr(v25,v30,5);return `<div class="kpi"><div class="label">${k.label}（2025）</div><div class="val">${fmtNum(v25)}<span class="unit">${k.unit}</span></div><div class="chg">2030E ${fmtNum(v30)} · <b style="color:#e5484d">CAGR +${cg==null?'-':cg.toFixed(0)}%</b></div></div>`;}).join('');
+  document.getElementById('dmkpis').innerHTML=kdef.map(k=>{const v26=at(k.arr,k.yrs,'2026E'),v25=at(k.arr,k.yrs,'2025');const yoy=(v25>0)?(v26-v25)/v25*100:null;return `<div class="kpi"><div class="label">${k.label}（2026E）</div><div class="val">${fmtNum(v26)}<span class="unit">${k.unit}</span></div>${chgSpan(yoy,'较2025')}</div>`;}).join('');
 
   // 一、全球电池需求
   barLine('d1a',D.bat.years,[{name:'动力电池',data:D.bat.dongli,color:'#1f6feb'},{name:'储能电池',data:D.bat.chuneng,color:'#1f9d55'},{name:'小型电池',data:D.bat.xiaoxing,color:'#d29922'},{name:'船舶机械等',data:D.bat.chuanbo,color:'#8957e5'}],{name:'合计YoY',data:D.bat.totalYoY,pct:true,axisName:'YoY%'},'GWh');
