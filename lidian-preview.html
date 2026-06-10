@@ -132,7 +132,7 @@ var _hmt = _hmt || [];
   <div class="sec green">九、全球动力电池装机（SNE）</div>
   <div class="grid">
     <div class="card"><h2>全球装机总量</h2><div class="ch">单位：GWh · 各年同期对比 · 悬停看当月/累计同比</div><div id="sne_total" class="chart"></div><div class="src">资料来源：SNE Research</div></div>
-    <div class="card"><h2>厂商装机份额变化</h2><div class="ch">单位：% · 各厂商月度装机份额堆叠 · 连续时间轴（可框选缩放）</div><div id="sne_share" class="chart"></div><div class="src">资料来源：SNE Research</div></div>
+    <div class="card"><h2>厂商装机份额变化</h2><div class="ch">单位：% · 各厂商月度装机份额走势 · 连续时间轴（可框选缩放）</div><div id="sne_share" class="chart"></div><div class="src">资料来源：SNE Research</div></div>
   </div>
   <div class="sec">十、明细数据</div>
   <div class="grid">
@@ -472,12 +472,12 @@ function chgSpan(p,label,suffix,bold){
       xAxis:{type:'category',data:MONTHS,boundaryGap:false,axisLine:axL,axisLabel:axT},
       yAxis:{type:'value',scale:true,splitLine:splL,axisLabel:axT},series:ser},dongliCharts);
     const mpal=['#6b9bd1','#62b08c','#d2b06a','#d98a84','#a395cc','#6cabab','#d99a6e','#cf8f9e','#8fb3d6','#7bbf9e','#d4b97a','#b3a6d6','#9aa4b2','#c98bbd'];
-    const shareSer=SNE.brands.map((b,i)=>({name:b,type:'line',stack:'sh',areaStyle:{opacity:.72},symbol:'none',connectNulls:true,data:SNE.shares[b].map(v=>v==null?null:+(v*100).toFixed(2)),lineStyle:{width:0},itemStyle:{color:mpal[i%mpal.length]}}));
-    mk('sne_share',{color:mpal,tooltip:{trigger:'axis',backgroundColor:'#ffffff',borderColor:'#cfe0f5',textStyle:{color:'#16335f'},formatter:ps=>{let s=ps[0].axisValue+'<br>';ps.slice().reverse().forEach(p=>{if(p.value==null||+p.value===0)return;s+=`${p.marker}${p.seriesName}：${(+p.value).toFixed(1)}%<br>`;});return s;}},
+    const shareSer=SNE.brands.map((b,i)=>({name:b,type:'line',smooth:true,symbol:'none',connectNulls:true,data:SNE.shares[b].map(v=>v==null?null:+(v*100).toFixed(2)),lineStyle:{width:1.8,color:mpal[i%mpal.length]},itemStyle:{color:mpal[i%mpal.length]},emphasis:{focus:'series'}}));
+    mk('sne_share',{color:mpal,tooltip:{trigger:'axis',backgroundColor:'#ffffff',borderColor:'#cfe0f5',textStyle:{color:'#16335f'},formatter:ps=>{let s=ps[0].axisValue+'<br>';ps.slice().filter(p=>p.value!=null&&+p.value>0).sort((a,b)=>b.value-a.value).forEach(p=>{s+=`${p.marker}${p.seriesName}：${(+p.value).toFixed(1)}%<br>`;});return s;}},
       legend:{top:0,left:'center',type:'scroll',textStyle:{color:'#5d7aa6',fontSize:10},inactiveColor:'#b9c9e2',itemWidth:13,itemHeight:8},
       grid:{left:42,right:14,top:40,bottom:52},
       xAxis:{type:'category',data:SNE.months,axisLine:axL,axisLabel:{...axT,hideOverlap:true}},
-      yAxis:{type:'value',max:100,axisLabel:{...axT,formatter:'{value}%'},splitLine:splL},
+      yAxis:{type:'value',scale:true,axisLabel:{...axT,formatter:'{value}%'},splitLine:splL},
       dataZoom:[{type:'inside',startValue:'2023-01'},{type:'slider',height:14,bottom:6,startValue:'2023-01',borderColor:'#cfe0f5',fillerColor:'rgba(31,111,235,.12)',textStyle:{color:'#5d7aa6'}}],
       series:shareSer},dongliCharts);
   })();
@@ -487,13 +487,16 @@ function chgSpan(p,label,suffix,bold){
     const WK=P1.weekly, names=Object.keys(WK.orders);
     const opal=['#6b9bd1','#e5484d','#62b08c','#d2b06a','#a395cc','#6cabab','#d99a6e','#cf8f9e','#8fb3d6','#b3a6d6'];
     const mom={}; names.forEach(n=>{const a=WK.orders[n];mom[n]=a.map((v,i)=>{if(v==null)return null;let pj=-1;for(let j=i-1;j>=0;j--){if(a[j]!=null){pj=j;break;}}return(pj>=0&&a[pj]!==0)?(v-a[pj])/a[pj]*100:null;});});
-    const ser=names.map((n,i)=>({name:n,type:'line',connectNulls:false,symbol:'circle',symbolSize:4,data:WK.orders[n],lineStyle:{width:2,color:opal[i%opal.length]},itemStyle:{color:opal[i%opal.length]}}));
-    mk('week_orders',{color:opal,tooltip:{...baseTip,formatter:ps=>{if(!ps.length)return'';let s=ps[0].axisValue+'<br>';ps.forEach(p=>{const i=p.dataIndex,mm=mom[p.seriesName]?mom[p.seriesName][i]:null;const f=x=>x==null?'':`　<span style="color:#8b98a8">环比${(x>=0?'+':'')+x.toFixed(1)}%</span>`;s+=`${p.marker}${p.seriesName}：${p.value==null?'-':(+p.value).toFixed(2)}万${f(mm)}<br>`;});return s;}},
+    const total=WK.weeks.map((w,i)=>{let su=0,has=false;names.forEach(n=>{const v=WK.orders[n][i];if(v!=null){su+=v;has=true;}});return has?+su.toFixed(2):null;});
+    const totalMom=total.map((v,i)=>{if(v==null)return null;let pj=-1;for(let j=i-1;j>=0;j--){if(total[j]!=null){pj=j;break;}}return(pj>=0&&total[pj]!==0)?(v-total[pj])/total[pj]*100:null;});
+    const lineSer=names.map((n,i)=>({name:n,type:'line',yAxisIndex:0,connectNulls:false,symbol:'circle',symbolSize:4,z:5,data:WK.orders[n],lineStyle:{width:2,color:opal[i%opal.length]},itemStyle:{color:opal[i%opal.length]}}));
+    const barSer={name:'样本企业订单总量',type:'bar',yAxisIndex:1,data:total,barWidth:'55%',z:0,itemStyle:{color:'rgba(107,155,209,.22)'}};
+    mk('week_orders',{color:opal,tooltip:{...baseTip,formatter:ps=>{if(!ps.length)return'';const i=ps[0].dataIndex;let s=ps[0].axisValue+'<br>';ps.forEach(p=>{if(p.seriesName==='样本企业订单总量')return;const mm=mom[p.seriesName]?mom[p.seriesName][i]:null;const f=x=>x==null?'':`　<span style="color:#8b98a8">环比${(x>=0?'+':'')+x.toFixed(1)}%</span>`;s+=`${p.marker}${p.seriesName}：${p.value==null?'-':(+p.value).toFixed(2)}万${f(mm)}<br>`;});const tm=totalMom[i],tf=(tm==null)?'':`　环比${(tm>=0?'+':'')+tm.toFixed(1)}%`;if(total[i]!=null)s+=`<span style="display:inline-block;margin-top:4px;padding-top:4px;border-top:1px solid #e8eef7;font-weight:600;color:#16335f">样本订单总量：${total[i].toFixed(2)}万${tf}</span>`;return s;}},
       legend:{top:0,left:'center',type:'scroll',textStyle:{color:'#5d7aa6',fontSize:11},inactiveColor:'#b9c9e2',itemWidth:16,itemHeight:9},
-      grid:{left:44,right:16,top:38,bottom:46},
+      grid:{left:44,right:48,top:38,bottom:46},
       xAxis:{type:'category',data:WK.weeks,axisLine:axL,axisLabel:{...axT,hideOverlap:true,rotate:30,fontSize:10}},
-      yAxis:{type:'value',scale:true,splitLine:splL,axisLabel:axT},
-      series:ser},dongliCharts);
+      yAxis:[{type:'value',name:'分企业(万)',scale:true,splitLine:splL,axisLabel:axT,nameTextStyle:{color:'#5d7aa6',fontSize:10,align:'right'},nameGap:6},{type:'value',name:'总量(万)',scale:true,position:'right',splitLine:{show:false},axisLabel:axT,nameTextStyle:{color:'#5d7aa6',fontSize:10,align:'left'},nameGap:6}],
+      series:[barSer].concat(lineSer)},dongliCharts);
   })();
 })();
 
