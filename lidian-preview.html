@@ -472,7 +472,9 @@ function chgSpan(p,label,suffix,bold){
       xAxis:{type:'category',data:MONTHS,boundaryGap:false,axisLine:axL,axisLabel:axT},
       yAxis:{type:'value',scale:true,splitLine:splL,axisLabel:axT},series:ser},dongliCharts);
     const mpal=['#6b9bd1','#62b08c','#d2b06a','#d98a84','#a395cc','#6cabab','#d99a6e','#cf8f9e','#8fb3d6','#7bbf9e','#d4b97a','#b3a6d6','#9aa4b2','#c98bbd'];
-    const shareSer=SNE.brands.map((b,i)=>({name:b,type:'line',smooth:true,symbol:'none',connectNulls:true,data:SNE.shares[b].map(v=>v==null?null:+(v*100).toFixed(2)),lineStyle:{width:1.8,color:mpal[i%mpal.length]},itemStyle:{color:mpal[i%mpal.length]},emphasis:{focus:'series'}}));
+    const _li=SNE.months.length-1;
+    const sortedBrands=SNE.brands.slice().sort((a,b)=>{if(a==='其他')return 1;if(b==='其他')return -1;return (SNE.shares[b][_li]||0)-(SNE.shares[a][_li]||0);});
+    const shareSer=sortedBrands.map((b,i)=>({name:b,type:'line',smooth:true,symbol:'none',connectNulls:true,data:SNE.shares[b].map(v=>v==null?null:+(v*100).toFixed(2)),lineStyle:{width:1.8,color:mpal[i%mpal.length]},itemStyle:{color:mpal[i%mpal.length]},emphasis:{focus:'series'}}));
     mk('sne_share',{color:mpal,tooltip:{trigger:'axis',backgroundColor:'#ffffff',borderColor:'#cfe0f5',textStyle:{color:'#16335f'},formatter:ps=>{let s=ps[0].axisValue+'<br>';ps.slice().filter(p=>p.value!=null&&+p.value>0).sort((a,b)=>b.value-a.value).forEach(p=>{s+=`${p.marker}${p.seriesName}：${(+p.value).toFixed(1)}%<br>`;});return s;}},
       legend:{top:0,left:'center',type:'scroll',textStyle:{color:'#5d7aa6',fontSize:10},inactiveColor:'#b9c9e2',itemWidth:13,itemHeight:8},
       grid:{left:42,right:14,top:40,bottom:52},
