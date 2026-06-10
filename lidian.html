@@ -257,7 +257,8 @@ var _hmt = _hmt || [];
 
 <footer>
   数据内嵌、可离线打开；图例可点击切换显隐，悬停看具体数值，时间轴图可框选缩放。<br>
-  动力部分：带电量为单台车平均装车电量（部分月份缺失按断点处理）。价格部分：加工费／隔膜等品种数据起始较晚。
+  动力部分：带电量为单台车平均装车电量（部分月份缺失按断点处理）。价格部分：加工费／隔膜等品种数据起始较晚。<br>
+  <span id="busuanzi_container_site_pv" style="display:none">本站总访问量 <b id="busuanzi_value_site_pv"></b> 次</span><span id="busuanzi_container_site_uv" style="display:none"> · 访客数 <b id="busuanzi_value_site_uv"></b> 人</span>
 </footer>
 
 <script>
@@ -809,5 +810,6 @@ function showTab(name){
 }
 document.querySelectorAll('.tab').forEach(b=>b.addEventListener('click',()=>showTab(b.dataset.tab)));
 </script>
+<script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
 </body>
 </html>
