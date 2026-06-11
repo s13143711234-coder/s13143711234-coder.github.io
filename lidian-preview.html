@@ -871,34 +871,58 @@ function exportAllData(){
   function esc(v){return String(v==null?'':v).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
   function nc(v){return v==null?'<Cell><Data ss:Type="String"></Data></Cell>':`<Cell><Data ss:Type="Number">${v}</Data></Cell>`;}
   function sc(v){return`<Cell><Data ss:Type="String">${esc(v)}</Data></Cell>`;}
-  function row(cells){return'<Row>'+cells.join('')+'</Row>';}
+  function mkrow(cells){return'<Row>'+cells.join('')+'</Row>';}
+  function ws(name,rows){return`<Worksheet ss:Name="${esc(name)}"><Table>${rows.join('')}</Table></Worksheet>`;}
 
-  // Sheet 1: 面板1 月度数据
-  const dc=[
-    {k:'ym',t:'月份',n:false},{k:'nevPv',t:'新能源乘用车零售(万辆)',n:true},{k:'nevPvPen',t:'乘用车渗透率(%)',n:true},
-    {k:'nevPvYoY',t:'乘用车当月同比(%)',n:true},{k:'nevPvYtd',t:'乘用车累计同比(%)',n:true},
-    {k:'nevCv',t:'新能源商用车(万辆)',n:true},{k:'cvTotal',t:'商用车总量(万辆)',n:true},
-    {k:'cvPen',t:'商用车渗透率(%)',n:true},{k:'nevCvYoY',t:'商用车当月同比(%)',n:true},{k:'cvYtd',t:'商用车累计同比(%)',n:true},
-    {k:'batBevPv',t:'纯电乘用车带电(kWh)',n:true},{k:'batPhevPv',t:'插混乘用车带电(kWh)',n:true},
-    {k:'batBevBus',t:'纯电客车带电(kWh)',n:true},{k:'batBevSpec',t:'纯电专用车带电(kWh)',n:true},
-    {k:'batPhevBus',t:'插混客车带电(kWh)',n:true},{k:'batPhevSpec',t:'插混专用车带电(kWh)',n:true},
-    {k:'battInstall',t:'动力电池装车(GWh)',n:true},
+  // 面板1：按图表分 Sheet
+  function dataSheet(name,cols){
+    const rows=[mkrow(cols.map(c=>sc(c.t)))];
+    DATA.forEach(d=>rows.push(mkrow(cols.map(c=>{const v=d[c.k];return c.n?(v==null?nc(null):nc(+v.toFixed(3))):sc(v);}))));
+    return ws(name,rows);
+  }
+  // 面板3：每种材料单独 Sheet
+  function priceSheet(g){
+    const rows=[mkrow([sc('月份'),...g.series.map(s=>sc(`${s.name}(${g.unit})`)) ])];
+    PRICE.dates.forEach((d,di)=>rows.push(mkrow([sc(d),...g.series.map(s=>{const v=s.data[di];return v==null?nc(null):nc(v);})])));
+    return ws(g.title,rows);
+  }
+
+  const sheets=[
+    dataSheet('乘用车-销量渗透率',[
+      {k:'ym',t:'月份',n:false},
+      {k:'nevPv',t:'新能源乘用车零售(万辆)',n:true},
+      {k:'nevPvPen',t:'渗透率(%)',n:true},
+      {k:'nevPvYoY',t:'当月同比(%)',n:true},
+      {k:'nevPvYtd',t:'累计同比(%)',n:true},
+    ]),
+    dataSheet('商用车-销量渗透率',[
+      {k:'ym',t:'月份',n:false},
+      {k:'nevCv',t:'新能源商用车(万辆)',n:true},
+      {k:'cvTotal',t:'商用车总量(万辆)',n:true},
+      {k:'cvPen',t:'渗透率(%)',n:true},
+      {k:'nevCvYoY',t:'当月同比(%)',n:true},
+      {k:'cvYtd',t:'累计同比(%)',n:true},
+    ]),
+    dataSheet('带电量-乘用车',[
+      {k:'ym',t:'月份',n:false},
+      {k:'batBevPv',t:'纯电乘用车(kWh)',n:true},
+      {k:'batPhevPv',t:'插混乘用车(kWh)',n:true},
+    ]),
+    dataSheet('带电量-商用车',[
+      {k:'ym',t:'月份',n:false},
+      {k:'batBevBus',t:'纯电客车(kWh)',n:true},
+      {k:'batBevSpec',t:'纯电专用车(kWh)',n:true},
+      {k:'batPhevBus',t:'插混客车(kWh)',n:true},
+      {k:'batPhevSpec',t:'插混专用车(kWh)',n:true},
+    ]),
+    dataSheet('动力电池装车量',[
+      {k:'ym',t:'月份',n:false},
+      {k:'battInstall',t:'装车量(GWh)',n:true},
+    ]),
+    ...PRICE.groups.map(g=>priceSheet(g)),
   ];
-  const s1=[row(dc.map(c=>sc(c.t)))];
-  DATA.forEach(d=>s1.push(row(dc.map(c=>{const v=d[c.k];return c.n?(v==null?nc(null):nc(+v.toFixed(3))):sc(v);}))));
 
-  // Sheet 2: 面板3 材料价格
-  const pcols=[{t:'月份',n:false}];
-  PRICE.groups.forEach(g=>g.series.forEach(s=>pcols.push({t:`${g.title}-${s.name}(${g.unit})`,g,s,n:true})));
-  const s2=[row(pcols.map(c=>sc(c.t)))];
-  PRICE.dates.forEach((d,di)=>{
-    const cells=[sc(d)];
-    PRICE.groups.forEach(g=>g.series.forEach(s=>{const v=s.data[di];cells.push(v==null?nc(null):nc(v));}));
-    s2.push('<Row>'+cells.join('')+'</Row>');
-  });
-
-  const ws=(name,rows)=>`<Worksheet ss:Name="${esc(name)}"><Table>${rows.join('')}</Table></Worksheet>`;
-  const xml=`<?xml version="1.0" encoding="UTF-8"?><?mso-application progid="Excel.Sheet"?><Workbook xmlns="urn:schemas-microsoft-com:office:spreadsheet" xmlns:ss="urn:schemas-microsoft-com:office:spreadsheet">${ws('面板1-月度数据',s1)}${ws('面板3-材料价格',s2)}</Workbook>`;
+  const xml=`<?xml version="1.0" encoding="UTF-8"?><?mso-application progid="Excel.Sheet"?><Workbook xmlns="urn:schemas-microsoft-com:office:spreadsheet" xmlns:ss="urn:schemas-microsoft-com:office:spreadsheet">${sheets.join('')}</Workbook>`;
   const blob=new Blob([xml],{type:'application/vnd.ms-excel;charset=utf-8'});
   const a=document.createElement('a');a.href=URL.createObjectURL(blob);
   const td=new Date(),ds=td.getFullYear()+('0'+(td.getMonth()+1)).slice(-2)+('0'+td.getDate()).slice(-2);
