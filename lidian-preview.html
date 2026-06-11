@@ -182,7 +182,7 @@ var _hmt = _hmt || [];
 <!-- ============ TAB 3: 材料价格 ============ -->
 <section id="tab-price" class="tabpane">
   <div class="meta">
-    数据区间：<b id="prange"></b>&nbsp;·&nbsp;频率：月度&nbsp;·&nbsp;资料来源：鑫椤资讯<br>
+    数据区间：<b id="prange"></b>&nbsp;·&nbsp;频率：月度&nbsp;·&nbsp;资料来源：鑫椤资讯/SMM<br>
     单位：磷酸铁锂 / 负极 / 电解液 / 六氟磷酸锂 / 铜箔·铝箔加工费 ＝ <b>万元/吨</b>；湿法隔膜 ＝ <b>元/㎡</b>。部分品种起始较晚，按断点处理。<br>
     若有任何使用意见或修改建议，欢迎联系邵梓洋 13143711234
   </div>
@@ -195,7 +195,7 @@ var _hmt = _hmt || [];
   </div>
   <div class="sec gold">价格总览（归一化对比）</div>
   <div class="grid">
-    <div class="card full"><h2>主要材料价格指数</h2><div class="ch" id="povsub">各材料代表规格 · 同基准月＝100 · 连续时间轴</div><div id="pov" class="chart" style="height:380px"></div></div>
+    <div class="card full"><h2>主要材料价格指数</h2><div class="ch" id="povsub">各材料代表规格 · 同基准月＝100 · 连续时间轴</div><div id="pov" class="chart" style="height:380px"></div><div class="src">资料来源：鑫椤资讯</div></div>
   </div>
   <div class="sec">分材料价格走势</div>
   <div class="grid" id="pgrid"></div>
@@ -616,7 +616,7 @@ function renderPrice(){
 
   // —— 分材料卡片 ——
   const grid=document.getElementById('pgrid');
-  grid.innerHTML=G.map((g,gi)=>`<div class="card"><h2>${g.title}</h2><div class="ch">单位：${g.unit} · 连续时间轴</div><div id="pg${gi}" class="chart"></div></div>`).join('');
+  grid.innerHTML=G.map((g,gi)=>`<div class="card"><h2>${g.title}</h2><div class="ch">单位：${g.unit} · 连续时间轴</div><div id="pg${gi}" class="chart"></div><div class="src">资料来源：鑫椤资讯</div></div>`).join('');
   G.forEach((g,gi)=>{
     const defs=g.series.map((s,i)=>({name:s.name,data:s.data,color:cpal[i%cpal.length]}));
     mk('pg'+gi,priceTL(defs,g.unit==='元/㎡'?'':' '+g.unit.replace('/吨','')),priceCharts);
