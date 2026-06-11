@@ -873,53 +873,81 @@ function exportAllData(){
   function sc(v){return`<Cell><Data ss:Type="String">${esc(v)}</Data></Cell>`;}
   function mkrow(cells){return'<Row>'+cells.join('')+'</Row>';}
   function ws(name,rows){return`<Worksheet ss:Name="${esc(name)}"><Table>${rows.join('')}</Table></Worksheet>`;}
+  function nf(v,d){return v==null?null:+v.toFixed(d||3);}
 
   // 面板1：按图表分 Sheet
   function dataSheet(name,cols){
     const rows=[mkrow(cols.map(c=>sc(c.t)))];
-    DATA.forEach(d=>rows.push(mkrow(cols.map(c=>{const v=d[c.k];return c.n?(v==null?nc(null):nc(+v.toFixed(3))):sc(v);}))));
+    DATA.forEach(d=>rows.push(mkrow(cols.map(c=>{const v=d[c.k];return c.n?(v==null?nc(null):nc(nf(v,3))):sc(v);}))));
     return ws(name,rows);
   }
+
+  // 面板2：储能
+  function storageSheets(){
+    const S=STORAGE, M=S.months;
+    const rows=[mkrow([sc('月份'),sc('招中标规模(GWh)'),sc('当月同比(%)'),sc('环比(%)'),sc('系统-2h(元/Wh)'),sc('系统-4h(元/Wh)'),sc('EPC-2h(元/Wh)'),sc('EPC-4h(元/Wh)')])];
+    M.forEach((_,i)=>rows.push(mkrow([sc(M[i]),nc(nf(S.scale[i],1)),nc(nf(S.scaleYoY[i],1)),nc(nf(S.scaleMoM[i],1)),nc(nf(S.sys2[i],3)),nc(nf(S.sys4[i],3)),nc(nf(S.epc2[i],3)),nc(nf(S.epc4[i],3))])));
+    return [ws('储能-规模与系统价格',rows)];
+  }
+
   // 面板3：每种材料单独 Sheet
   function priceSheet(g){
-    const rows=[mkrow([sc('月份'),...g.series.map(s=>sc(`${s.name}(${g.unit})`)) ])];
+    const rows=[mkrow([sc('月份'),...g.series.map(s=>sc(`${s.name}(${g.unit})`))])];
     PRICE.dates.forEach((d,di)=>rows.push(mkrow([sc(d),...g.series.map(s=>{const v=s.data[di];return v==null?nc(null):nc(v);})])));
     return ws(g.title,rows);
   }
 
+  // 面板4：排产，每个环节一个 Sheet
+  function scheduleSheets(){
+    const MO=['1月','2月','3月','4月','5月','6月','7月','8月','9月','10月','11月','12月'];
+    return SCHEDULE.segments.map(seg=>{
+      const cos=SCHEDULE.companies.filter(c=>c.seg===seg.seg);
+      const rows=[mkrow([sc('年份'),sc('公司'),...MO.map(sc)])];
+      cos.forEach(co=>Object.keys(co.years).sort((a,b)=>b-a).forEach(yr=>{
+        rows.push(mkrow([sc(yr),sc(co.name),...co.years[yr].map(v=>v==null?nc(null):nc(v))]));
+      }));
+      return ws(`排产-${seg.seg}(${seg.unit})`,rows);
+    });
+  }
+
+  // 面板5：需求预测，分3个 Sheet
+  function demandSheets(){
+    const D=DEMAND;
+    function arrSheet(name,yrs,cols){
+      const rows=[mkrow([sc('年份'),...cols.map(c=>sc(c.t))])];
+      yrs.forEach((y,i)=>rows.push(mkrow([sc(String(y)),...cols.map(c=>{const v=c.a[i];return v==null?nc(null):nc(+v.toFixed(1));})])));
+      return ws(name,rows);
+    }
+    return [
+      arrSheet('需求-电池(GWh)',D.bat.years,[
+        {t:'动力电池',a:D.bat.dongli},{t:'储能电池',a:D.bat.chuneng},
+        {t:'小型电池',a:D.bat.xiaoxing},{t:'船舶机械等',a:D.bat.chuanbo},
+        {t:'合计',a:D.bat.total},{t:'合计YoY(%)',a:D.bat.totalYoY},
+      ]),
+      arrSheet('需求-新能源车销量(万辆)',D.ev.years,[
+        {t:'全球',a:D.ev.global},{t:'中国',a:D.ev.china},
+        {t:'欧洲',a:D.ev.eu},{t:'美国',a:D.ev.us},
+        {t:'其他',a:D.ev.other},{t:'全球渗透率(%)',a:D.ev.penGlobal},
+      ]),
+      arrSheet('需求-动力装机(GWh)',D.install.years,[
+        {t:'全球合计',a:D.install.total},{t:'中国',a:D.install.china},
+        {t:'欧洲',a:D.install.eu},{t:'美国',a:D.install.us},
+        {t:'其他',a:D.install.other},{t:'国内单车带电(kWh)',a:D.install.kwhCN},
+        {t:'欧洲单车带电(kWh)',a:D.install.kwhEU},
+      ]),
+    ];
+  }
+
   const sheets=[
-    dataSheet('乘用车-销量渗透率',[
-      {k:'ym',t:'月份',n:false},
-      {k:'nevPv',t:'新能源乘用车零售(万辆)',n:true},
-      {k:'nevPvPen',t:'渗透率(%)',n:true},
-      {k:'nevPvYoY',t:'当月同比(%)',n:true},
-      {k:'nevPvYtd',t:'累计同比(%)',n:true},
-    ]),
-    dataSheet('商用车-销量渗透率',[
-      {k:'ym',t:'月份',n:false},
-      {k:'nevCv',t:'新能源商用车(万辆)',n:true},
-      {k:'cvTotal',t:'商用车总量(万辆)',n:true},
-      {k:'cvPen',t:'渗透率(%)',n:true},
-      {k:'nevCvYoY',t:'当月同比(%)',n:true},
-      {k:'cvYtd',t:'累计同比(%)',n:true},
-    ]),
-    dataSheet('带电量-乘用车',[
-      {k:'ym',t:'月份',n:false},
-      {k:'batBevPv',t:'纯电乘用车(kWh)',n:true},
-      {k:'batPhevPv',t:'插混乘用车(kWh)',n:true},
-    ]),
-    dataSheet('带电量-商用车',[
-      {k:'ym',t:'月份',n:false},
-      {k:'batBevBus',t:'纯电客车(kWh)',n:true},
-      {k:'batBevSpec',t:'纯电专用车(kWh)',n:true},
-      {k:'batPhevBus',t:'插混客车(kWh)',n:true},
-      {k:'batPhevSpec',t:'插混专用车(kWh)',n:true},
-    ]),
-    dataSheet('动力电池装车量',[
-      {k:'ym',t:'月份',n:false},
-      {k:'battInstall',t:'装车量(GWh)',n:true},
-    ]),
+    dataSheet('①乘用车-销量渗透率',[{k:'ym',t:'月份',n:false},{k:'nevPv',t:'新能源乘用车零售(万辆)',n:true},{k:'nevPvPen',t:'渗透率(%)',n:true},{k:'nevPvYoY',t:'当月同比(%)',n:true},{k:'nevPvYtd',t:'累计同比(%)',n:true}]),
+    dataSheet('①商用车-销量渗透率',[{k:'ym',t:'月份',n:false},{k:'nevCv',t:'新能源商用车(万辆)',n:true},{k:'cvTotal',t:'商用车总量(万辆)',n:true},{k:'cvPen',t:'渗透率(%)',n:true},{k:'nevCvYoY',t:'当月同比(%)',n:true},{k:'cvYtd',t:'累计同比(%)',n:true}]),
+    dataSheet('①带电量-乘用车',[{k:'ym',t:'月份',n:false},{k:'batBevPv',t:'纯电乘用车(kWh)',n:true},{k:'batPhevPv',t:'插混乘用车(kWh)',n:true}]),
+    dataSheet('①带电量-商用车',[{k:'ym',t:'月份',n:false},{k:'batBevBus',t:'纯电客车(kWh)',n:true},{k:'batBevSpec',t:'纯电专用车(kWh)',n:true},{k:'batPhevBus',t:'插混客车(kWh)',n:true},{k:'batPhevSpec',t:'插混专用车(kWh)',n:true}]),
+    dataSheet('①动力电池装车量',[{k:'ym',t:'月份',n:false},{k:'battInstall',t:'装车量(GWh)',n:true}]),
+    ...storageSheets(),
     ...PRICE.groups.map(g=>priceSheet(g)),
+    ...scheduleSheets(),
+    ...demandSheets(),
   ];
 
   const xml=`<?xml version="1.0" encoding="UTF-8"?><?mso-application progid="Excel.Sheet"?><Workbook xmlns="urn:schemas-microsoft-com:office:spreadsheet" xmlns:ss="urn:schemas-microsoft-com:office:spreadsheet">${sheets.join('')}</Workbook>`;
