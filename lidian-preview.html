@@ -191,8 +191,7 @@ var _hmt = _hmt || [];
   <div class="grid">
     <div class="card"><h2>储能电芯价格</h2><div class="ch">单位：元/Wh · 周度</div><div id="cp_es" class="chart"></div><div class="src">资料来源：SMM</div></div>
     <div class="card"><h2>动力电芯价格</h2><div class="ch">单位：元/Wh · 周度</div><div id="cp_ev" class="chart"></div><div class="src">资料来源：SMM</div></div>
-    <div class="card"><h2>电池库存（磷酸铁锂 / 三元）</h2><div class="ch">单位：GWh · 月度</div><div id="cp_inv1" class="chart"></div><div class="src">资料来源：SMM</div></div>
-    <div class="card"><h2>电池库存（储能 / 动力）</h2><div class="ch">单位：GWh · 月度（动力在右轴）</div><div id="cp_inv2" class="chart"></div><div class="src">资料来源：SMM</div></div>
+    <div class="card"><h2>电池库存</h2><div class="ch">单位：GWh · 月度 · 储能左轴 / 动力右轴</div><div id="cp_inv2" class="chart"></div><div class="src">资料来源：SMM</div></div>
   </div>
   <div class="sec gold">价格总览（归一化对比）</div>
   <div class="grid">
@@ -532,7 +531,7 @@ function renderPrice(){
       grid:{left:54,right:18,top:36,bottom:54},
       xAxis:{type:'category',data:D,axisLine:axL,axisLabel:{...axT,hideOverlap:true,showMaxLabel:true}},
       yAxis:{type:'value',scale:true,splitLine:splL,axisLabel:axT},
-      dataZoom:[{type:'inside',startValue:'2021-01'},{type:'slider',height:16,bottom:8,borderColor:'#cfe0f5',textStyle:{color:'#5d7aa6'},fillerColor:'rgba(31,111,235,.12)',startValue:'2021-01'}],
+      dataZoom:[{type:'inside',startValue:'2024-01'},{type:'slider',height:16,bottom:8,borderColor:'#cfe0f5',textStyle:{color:'#5d7aa6'},fillerColor:'rgba(31,111,235,.12)',startValue:'2024-01'}],
       series:defs.map((s,i)=>({name:s.name,type:'line',smooth:true,showSymbol:false,connectNulls:false,data:s.data,lineStyle:{width:2.2,color:s.color||cpal[i%cpal.length]}}))};
   }
 
@@ -549,28 +548,27 @@ function renderPrice(){
       dataZoom:[{type:'inside',startValue:stV},{type:'slider',height:16,bottom:8,borderColor:'#cfe0f5',textStyle:{color:'#5d7aa6'},fillerColor:'rgba(31,111,235,.12)',startValue:stV}],
       series:defs.map((s,i)=>({name:s.name,type:'line',smooth:true,showSymbol:false,connectNulls:false,data:s.data,lineStyle:{width:2.2,color:cpal[i%cpal.length]}}))
     });
-    mk('cp_es',cpTL([{name:'280Ah储能电芯',data:CP.s280},{name:'314Ah储能电芯',data:CP.s314}],' 元/Wh','2023-01-06'),priceCharts);
+    mk('cp_es',cpTL([{name:'280Ah储能电芯',data:CP.s280},{name:'314Ah储能电芯',data:CP.s314}],' 元/Wh','2024-01-05'),priceCharts);
     mk('cp_ev',cpTL([{name:'174Ah磷酸铁锂动力电芯',data:CP.p174},{name:'158Ah 8系三元电芯',data:CP.t158}],' 元/Wh','2024-01-05'),priceCharts);
   }
   // —— 电池库存（月度）——
   {
     const IVD=INVENTORY.dates,IV=INVENTORY;
-    const ivTL=(defs,yx,rgt)=>({
+    const ivTL=(defs,yx,rgt,stV)=>({
       color:defs.map((s,i)=>cpal[i%cpal.length]),
       tooltip:{...baseTip,valueFormatter:v=>v==null?'-':v.toFixed(1)+' GWh'},
       legend:{top:0,right:0,textStyle:{color:'#5d7aa6'},inactiveColor:'#b9c9e2',data:defs.map(s=>s.name)},
       grid:{left:54,right:rgt||18,top:36,bottom:54},
       xAxis:{type:'category',data:IVD,axisLine:axL,axisLabel:{...axT,hideOverlap:true,showMaxLabel:true}},
       yAxis:yx,
-      dataZoom:[{type:'inside'},{type:'slider',height:16,bottom:8,borderColor:'#cfe0f5',textStyle:{color:'#5d7aa6'},fillerColor:'rgba(31,111,235,.12)'}],
+      dataZoom:[{type:'inside',...(stV?{startValue:stV}:{})},{type:'slider',height:16,bottom:8,borderColor:'#cfe0f5',textStyle:{color:'#5d7aa6'},fillerColor:'rgba(31,111,235,.12)',...(stV?{startValue:stV}:{})}],
       series:defs.map((s,i)=>({name:s.name,type:'line',smooth:true,showSymbol:false,connectNulls:false,data:s.data,...(s.yi!=null?{yAxisIndex:s.yi}:{}),lineStyle:{width:2.2,color:cpal[i%cpal.length]}}))
     });
-    mk('cp_inv1',ivTL([{name:'磷酸铁锂电池库存',data:IV.lfp},{name:'三元电池库存',data:IV.ncm}],{type:'value',scale:true,splitLine:splL,axisLabel:axT}),priceCharts);
     mk('cp_inv2',ivTL(
       [{name:'储能电池库存',data:IV.es,yi:0},{name:'动力电池库存',data:IV.ev,yi:1}],
-      [{type:'value',name:'储能(GWh)',nameTextStyle:{color:'#5d7aa6',fontSize:11},scale:true,splitLine:splL,axisLabel:axT},
-       {type:'value',name:'动力(GWh)',nameTextStyle:{color:'#5d7aa6',fontSize:11},scale:true,splitLine:{show:false},axisLabel:axT}],
-      54
+      [{type:'value',scale:true,splitLine:splL,axisLabel:{...axT,formatter:v=>v.toFixed(0)+'GWh'}},
+       {type:'value',scale:true,splitLine:{show:false},axisLabel:{...axT,formatter:v=>v.toFixed(0)+'GWh'}}],
+      64,'2024/1'
     ),priceCharts);
   }
   // —— 碳酸锂供需平衡（从2025-01）——
