@@ -585,8 +585,17 @@ function renderPrice(){
     mk('litco_chart',{
       color:lc,
       tooltip:{...baseTip,formatter:ps=>{
+        const full={'需求':LITCO.demand.map(v=>v==null?null:-v),'产量':LITCO.prod,'进口量':LITCO.import,'出口量':LITCO.export.map(v=>v==null?null:-v),'平衡值':LITCO.balance};
         let s=ps[0].axisValue+'<br>';
-        ps.forEach(p=>{s+=p.marker+p.seriesName+'：'+(p.value==null?'-':p.value.toLocaleString('zh-CN')+'吨')+'<br>';});
+        ps.forEach(p=>{
+          const arr=full[p.seriesName], j=si+p.dataIndex;
+          let mom='';
+          if(arr&&j>0&&arr[j]!=null&&arr[j-1]!=null){
+            if(p.seriesName==='平衡值'){const d=arr[j]-arr[j-1];mom=' <span style="color:#8b98a8">环比'+(d>=0?'+':'')+d.toLocaleString('zh-CN')+'吨</span>';}
+            else if(arr[j-1]!==0){const m=(arr[j]-arr[j-1])/Math.abs(arr[j-1])*100;mom=' <span style="color:'+(m>=0?'#1f9d55':'#f85149')+'">环比'+(m>=0?'+':'')+m.toFixed(1)+'%</span>';}
+          }
+          s+=p.marker+p.seriesName+'：'+(p.value==null?'-':p.value.toLocaleString('zh-CN')+'吨')+mom+'<br>';
+        });
         return s;
       }},
       legend:{top:0,right:0,textStyle:{color:'#5d7aa6'},inactiveColor:'#b9c9e2',data:['需求','产量','进口量','出口量','平衡值']},
