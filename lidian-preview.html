@@ -592,7 +592,7 @@ function renderPrice(){
           let mom='';
           if(arr&&j>0&&arr[j]!=null&&arr[j-1]!=null){
             if(p.seriesName==='平衡值'){const d=arr[j]-arr[j-1];mom=' <span style="color:#8b98a8">环比'+(d>=0?'+':'')+d.toLocaleString('zh-CN')+'吨</span>';}
-            else if(arr[j-1]!==0){const m=(arr[j]-arr[j-1])/Math.abs(arr[j-1])*100;mom=' <span style="color:'+(m>=0?'#1f9d55':'#f85149')+'">环比'+(m>=0?'+':'')+m.toFixed(1)+'%</span>';}
+            else if(arr[j-1]!==0){const m=(arr[j]-arr[j-1])/Math.abs(arr[j-1])*100;mom=' <span style="color:'+(m>=0?'#f85149':'#1f9d55')+'">环比'+(m>=0?'+':'')+m.toFixed(1)+'%</span>';}
           }
           s+=p.marker+p.seriesName+'：'+(p.value==null?'-':p.value.toLocaleString('zh-CN')+'吨')+mom+'<br>';
         });
