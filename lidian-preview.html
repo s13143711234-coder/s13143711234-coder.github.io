@@ -625,16 +625,18 @@ function renderPrice(){
   // —— KPI ——
   function lastNN(a){for(let i=a.length-1;i>=0;i--)if(a[i]!=null)return i;return -1;}
   function prevNN(a,i){for(let j=i-1;j>=0;j--)if(a[j]!=null)return j;return -1;}
-  const pk=heads.map(h=>{
+  function cellKpi(title,arr){const dts=CELLPRICE.dates;const i=lastNN(arr);if(i<0)return null;const cur=arr[i],pj=prevNN(arr,i),mom=(pj>=0&&arr[pj])?(cur-arr[pj])/arr[pj]*100:null;const d0=new Date(dts[i]),tg=new Date(dts[i]);tg.setFullYear(d0.getFullYear()-1);let yi=-1,best=1e18;for(let k=0;k<=i;k++){if(arr[k]==null)continue;const df=Math.abs(new Date(dts[k])-tg);if(df<best){best=df;yi=k;}}const yoy=(yi>=0&&arr[yi]&&best<3888000000)?(cur-arr[yi])/arr[yi]*100:null;return {title,unit:'元/Wh',val:cur,mom,yoy,dec:3};}
+  const matKpi=heads.filter(h=>!['铜箔加工费','铝箔加工费','EC溶剂'].includes(h.title)).map(h=>{
     const a=h.s.data, i=lastNN(a); if(i<0)return null;
     const cur=a[i], pj=prevNN(a,i), mom=(pj>=0&&a[pj])?(cur-a[pj])/a[pj]*100:null;
     const yi=i-12, yoy=(yi>=0&&a[yi]!=null&&a[yi]!==0)?(cur-a[yi])/a[yi]*100:null;
     const g=G.find(x=>x.title===h.title);
-    return {title:h.title,unit:g.unit,val:cur,mom,yoy};
+    return {title:h.title,unit:g.unit,val:cur,mom,yoy,dec:2};
   }).filter(Boolean);
+  const pk=[cellKpi('314Ah储能电芯',CELLPRICE.s314),cellKpi('174Ah磷酸铁锂动力电芯',CELLPRICE.p174)].filter(Boolean).concat(matKpi);
   document.getElementById('pkpis').innerHTML=pk.map(k=>
     `<div class="kpi"><div class="label">${k.title}（${k.unit}）</div>
-     <div class="val">${(+k.val).toFixed(2)}</div>
+     <div class="val">${(+k.val).toFixed(k.dec||2)}</div>
      <div class="chg">${chgSpan(k.mom,'环比').replace('class="chg ','class="')} <span style="color:#cfe0f5">|</span> ${k.yoy==null?'<span style=\"color:#5d7aa6\">同比 —</span>':chgSpan(k.yoy,'同比').replace('class="chg ','class="')}</div></div>`).join('');
 
   // —— 明细表（代表规格） ——
