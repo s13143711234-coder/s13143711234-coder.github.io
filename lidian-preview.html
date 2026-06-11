@@ -59,6 +59,9 @@
   tbody td:first-child{text-align:left;color:var(--sub);font-weight:600}
   tbody tr:hover{background:#f0f6ff}tbody tr:nth-child(even){background:#fafcff}
   footer{color:var(--sub);font-size:12px;margin-top:30px;line-height:1.8}
+  .hdrow{display:flex;justify-content:space-between;align-items:center}
+  .expbtn{font-size:12.5px;font-weight:600;color:#1f6feb;background:#fff;border:1.5px solid #9fc0ef;border-radius:9px;padding:7px 16px;cursor:pointer;font-family:inherit;transition:.15s;box-shadow:0 2px 8px rgba(31,111,235,.08);white-space:nowrap}
+  .expbtn:hover{background:#f0f6ff;border-color:#1f6feb;box-shadow:0 3px 12px rgba(31,111,235,.18)}
   @media(max-width:560px){body{padding:16px}.grid{grid-template-columns:1fr}.chart{height:300px}}
 </style>
 <!-- 百度统计（仅站长后台可见，访客无感知） -->
@@ -73,7 +76,7 @@ var _hmt = _hmt || [];
 </script>
 </head>
 <body>
-<h1>【华泰电新】锂电产业链跟踪</h1>
+<div class="hdrow"><h1>【华泰电新】锂电产业链跟踪</h1><button class="expbtn" onclick="exportAllData()">⬇ 导出数据底稿</button></div>
 <div class="tabs">
   <button class="tab active" data-tab="dongli">① 动力需求跟踪</button>
   <button class="tab" data-tab="storage">② 储能需求跟踪</button>
@@ -863,6 +866,44 @@ function showTab(name){
   setTimeout(()=>arr.forEach(c=>c.resize()),0);
 }
 document.querySelectorAll('.tab').forEach(b=>b.addEventListener('click',()=>showTab(b.dataset.tab)));
+
+function exportAllData(){
+  function esc(v){return String(v==null?'':v).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+  function nc(v){return v==null?'<Cell><Data ss:Type="String"></Data></Cell>':`<Cell><Data ss:Type="Number">${v}</Data></Cell>`;}
+  function sc(v){return`<Cell><Data ss:Type="String">${esc(v)}</Data></Cell>`;}
+  function row(cells){return'<Row>'+cells.join('')+'</Row>';}
+
+  // Sheet 1: 面板1 月度数据
+  const dc=[
+    {k:'ym',t:'月份',n:false},{k:'nevPv',t:'新能源乘用车零售(万辆)',n:true},{k:'nevPvPen',t:'乘用车渗透率(%)',n:true},
+    {k:'nevPvYoY',t:'乘用车当月同比(%)',n:true},{k:'nevPvYtd',t:'乘用车累计同比(%)',n:true},
+    {k:'nevCv',t:'新能源商用车(万辆)',n:true},{k:'cvTotal',t:'商用车总量(万辆)',n:true},
+    {k:'cvPen',t:'商用车渗透率(%)',n:true},{k:'nevCvYoY',t:'商用车当月同比(%)',n:true},{k:'cvYtd',t:'商用车累计同比(%)',n:true},
+    {k:'batBevPv',t:'纯电乘用车带电(kWh)',n:true},{k:'batPhevPv',t:'插混乘用车带电(kWh)',n:true},
+    {k:'batBevBus',t:'纯电客车带电(kWh)',n:true},{k:'batBevSpec',t:'纯电专用车带电(kWh)',n:true},
+    {k:'batPhevBus',t:'插混客车带电(kWh)',n:true},{k:'batPhevSpec',t:'插混专用车带电(kWh)',n:true},
+    {k:'battInstall',t:'动力电池装车(GWh)',n:true},
+  ];
+  const s1=[row(dc.map(c=>sc(c.t)))];
+  DATA.forEach(d=>s1.push(row(dc.map(c=>{const v=d[c.k];return c.n?(v==null?nc(null):nc(+v.toFixed(3))):sc(v);}))));
+
+  // Sheet 2: 面板3 材料价格
+  const pcols=[{t:'月份',n:false}];
+  PRICE.groups.forEach(g=>g.series.forEach(s=>pcols.push({t:`${g.title}-${s.name}(${g.unit})`,g,s,n:true})));
+  const s2=[row(pcols.map(c=>sc(c.t)))];
+  PRICE.dates.forEach((d,di)=>{
+    const cells=[sc(d)];
+    PRICE.groups.forEach(g=>g.series.forEach(s=>{const v=s.data[di];cells.push(v==null?nc(null):nc(v));}));
+    s2.push('<Row>'+cells.join('')+'</Row>');
+  });
+
+  const ws=(name,rows)=>`<Worksheet ss:Name="${esc(name)}"><Table>${rows.join('')}</Table></Worksheet>`;
+  const xml=`<?xml version="1.0" encoding="UTF-8"?><?mso-application progid="Excel.Sheet"?><Workbook xmlns="urn:schemas-microsoft-com:office:spreadsheet" xmlns:ss="urn:schemas-microsoft-com:office:spreadsheet">${ws('面板1-月度数据',s1)}${ws('面板3-材料价格',s2)}</Workbook>`;
+  const blob=new Blob([xml],{type:'application/vnd.ms-excel;charset=utf-8'});
+  const a=document.createElement('a');a.href=URL.createObjectURL(blob);
+  const td=new Date(),ds=td.getFullYear()+('0'+(td.getMonth()+1)).slice(-2)+('0'+td.getDate()).slice(-2);
+  a.download=`锂电产业链跟踪-数据底稿_${ds}.xls`;a.click();
+}
 </script>
 <script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
 </body>
