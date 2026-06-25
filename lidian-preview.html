@@ -201,8 +201,8 @@ var _hmt = _hmt || [];
   <div class="grid" id="pgrid"></div>
   <div class="sec">锂电材料供需平衡</div>
   <div class="grid">
-    <div class="card full"><h2>主要锂电材料产能利用率</h2><div class="ch">单位：% · 各材料年度产能利用率（2021-2028E，2026E起为预测）· 悬停看各材料数值</div><div id="matutil1" class="chart" style="height:380px"></div><div class="src">资料来源：鑫椤资讯 / 华泰证券研究所</div></div>
-    <div class="card full"><h2>主要材料产能利用率对比（2024/2025/2026E）</h2><div class="ch">单位：% · 各材料近三年产能利用率横向对比</div><div id="matutil2" class="chart" style="height:300px"></div><div class="src">资料来源：鑫椤资讯 / 华泰证券研究所</div></div>
+    <div class="card full"><h2>主要锂电材料产能利用率</h2><div class="ch">单位：% · 各材料年度产能利用率（2021-2028E，2026E起为预测）· 悬停看各材料数值</div><div id="matutil1" class="chart" style="height:380px"></div><div class="src">资料来源：华泰研究测算</div></div>
+    <div class="card full"><h2>主要材料产能利用率对比（2024-2028E）</h2><div class="ch">单位：% · 各材料2024/2025A/2026-2028E产能利用率横向对比</div><div id="matutil2" class="chart" style="height:300px"></div><div class="src">资料来源：华泰研究测算</div></div>
   </div>
   <div class="sec">碳酸锂供需平衡</div>
   <div class="grid">
@@ -585,7 +585,7 @@ function renderPrice(){
     const fIdx=MU.years.indexOf("2026E");
     const muSer=MU.items.map((it,i)=>{const col=mCpal[i%mCpal.length];const s={name:it.name,type:"line",data:it.data,connectNulls:false,symbol:"circle",symbolSize:4,lineStyle:{width:2,color:col},itemStyle:{color:col}};if(i===0&&fIdx>=0)s.markArea={silent:true,itemStyle:{color:"rgba(133,87,229,.06)"},label:{show:true,position:"top",color:"#a3aebf",fontSize:11,formatter:"预测"},data:[[{xAxis:MU.years[fIdx]},{xAxis:MU.years[MU.years.length-1]}]]};return s;});
     mk("matutil1",{tooltip:{...baseTip,formatter:ps=>{let s=ps[0].axisValue+"<br>";ps.forEach(p=>{s+=p.marker+p.seriesName+":"+(p.value==null?"-":p.value+"%")+"<br>";});return s;}},legend:{top:0,left:"center",type:"scroll",textStyle:{color:"#5d7aa6",fontSize:11},inactiveColor:"#b9c9e2"},grid:{left:50,right:18,top:42,bottom:28},xAxis:{type:"category",data:MU.years,axisLine:axL,axisLabel:axT},yAxis:{type:"value",name:"%",scale:true,splitLine:splL,axisLabel:{...axT,formatter:"{value}%"},nameTextStyle:{color:"#5d7aa6",align:"right"}},series:muSer},priceCharts);
-    const mu3y=["2024","2025","2026E"],mu3c=["#6b9bd1","#62b08c","#d2b06a"];
+    const mu3y=["2024","2025","2026E","2027E","2028E"],mu3c=["#6b9bd1","#62b08c","#d2b06a","#d98a84","#a395cc"];
     const mu3Ser=mu3y.map((y,yi)=>({name:y,type:"bar",data:MU.items.map(it=>it.data[MU.years.indexOf(y)]),itemStyle:{color:mu3c[yi]}}));
     mk("matutil2",{tooltip:{...baseTip,formatter:ps=>{let s=ps[0].axisValue+"<br>";ps.forEach(p=>{s+=p.marker+p.seriesName+":"+(p.value==null?"-":p.value+"%")+"<br>";});return s;}},legend:{top:0,right:0,textStyle:{color:"#5d7aa6",fontSize:11},inactiveColor:"#b9c9e2"},grid:{left:50,right:18,top:36,bottom:60},xAxis:{type:"category",data:MU.items.map(it=>it.name),axisLine:axL,axisLabel:{...axT,fontSize:11,rotate:15}},yAxis:{type:"value",name:"%",scale:true,splitLine:splL,axisLabel:{...axT,formatter:"{value}%"},nameTextStyle:{color:"#5d7aa6",align:"right"}},series:mu3Ser},priceCharts);
   }
