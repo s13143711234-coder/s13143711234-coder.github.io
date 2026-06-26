@@ -29,6 +29,22 @@ function ReadCols($ws, [hashtable]$cols) {
     $a = $list.ToArray(); [array]::Reverse($a); return $a
 }
 
+function ReadColsDay($ws, [hashtable]$cols, $fromDate) {
+    $list = [System.Collections.Generic.List[hashtable]]::new()
+    $r = 5
+    while ($r -le 6000) {
+        $dt = $ws.Cells.Item($r,1).Text
+        if ($dt -eq "") { break }
+        if ($dt -ge $fromDate) {
+            $row = @{ _d = $dt }
+            foreach ($kv in $cols.GetEnumerator()) { $row[$kv.Key] = $ws.Cells.Item($r,$kv.Value).Value2 }
+            $list.Add($row)
+        }
+        $r++
+    }
+    $a = $list.ToArray(); [array]::Reverse($a); return $a
+}
+
 function ConvDate($s, $sep) {
     if ($s -match "^(\d{4})-(\d{2})-\d{2}$") { return $Matches[1] + $sep + [int]$Matches[2] }
     return $s
@@ -62,6 +78,13 @@ $newINV = "const INVENTORY={dates:" + $invD + ",lfp:" + (Jarr ($mo|%{fv $_.lfp})
 $litD = Jarr ($mo | ForEach-Object { '"' + (ConvDate $_._d "-") + '"' })
 $newLIT = "const LITCO={dates:" + $litD + ",demand:" + (Jarr ($mo|%{fv $_.demand})) + ",import:" + (Jarr ($mo|%{fv $_.import})) + ",export:" + (Jarr ($mo|%{fv $_.export})) + ",balance:" + (Jarr ($mo|%{fv $_.balance})) + ",prod:" + (Jarr ($mo|%{fv $_.prod})) + "};"
 
+# SMMDAY (daily 6F + VC from SMM日度)
+Write-Host "SMMDAY..."
+$wsD = $wb.Sheets.Item("SMM日度")
+$day = ReadColsDay $wsD @{lf6=15;vc=26} "2021-01-01"
+$dayDates = Jarr ($day | ForEach-Object { '"' + $_._d + '"' })
+$newSMMDAY = "const SMMDAY={dates:" + $dayDates + ",lf6:" + (Jarr ($day|%{if($_.lf6 -eq $null){"null"}else{fv ([double]$_.lf6/10000)}})) + ",vc:" + (Jarr ($day|%{if($_.vc -eq $null){"null"}else{fv ([double]$_.vc/10000)}})) + "};"
+
 $wb.Close($false); $xl.Quit()
 [Runtime.InteropServices.Marshal]::ReleaseComObject($xl) | Out-Null
 Write-Host "Excel closed."
@@ -74,6 +97,7 @@ $c = RC $c "CELLPRICE" $newCP
 $c = RC $c "LFPFEE"    $newLF
 $c = RC $c "INVENTORY" $newINV
 $c = RC $c "LITCO"     $newLIT
+$c = RC $c "SMMDAY"    $newSMMDAY
 [IO.File]::WriteAllText($Html, $c, [Text.Encoding]::UTF8)
 Write-Host "HTML updated."
 
