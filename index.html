@@ -8,6 +8,11 @@
   :root { --up:#d4332b; --down:#0a9d5a; --bg:#e8f1fb; --panel:#ffffff; --line:#d3e0f0; --txt:#1d2330; --sub:#5f718c; --acc:#2f6fed; }
   * { box-sizing:border-box; }
   body { margin:0; background:var(--bg); color:var(--txt); font-family:"Microsoft YaHei","Segoe UI",system-ui,sans-serif; font-size:14px; }
+  .topnav { display:flex; align-items:center; gap:6px; padding:9px 24px; background:#0f2747; }
+  .topnav .brand { font-weight:700; margin-right:18px; font-size:14px; color:#fff; }
+  .topnav a { color:#cdddf3; text-decoration:none; padding:6px 14px; border-radius:7px; font-size:13px; }
+  .topnav a:hover { background:rgba(255,255,255,.12); color:#fff; }
+  .topnav a.active { background:var(--acc); color:#fff; font-weight:600; }
   header { padding:16px 24px 12px; border-bottom:1px solid var(--line); display:flex; flex-wrap:wrap; align-items:center; gap:16px; position:sticky; top:0; background:var(--bg); z-index:30; }
   h1 { font-size:19px; margin:0; font-weight:700; }
   .asof { color:var(--acc); font-size:13px; font-weight:600; margin-top:4px; }
@@ -51,11 +56,12 @@
 </style>
 </head>
 <body>
+<nav class="topnav"><span class="brand">⚡ 锂电储能研究工作台</span><a href="index.html" class="active">盯盘面板</a><a href="scan.html">机会扫描</a></nav>
 <header>
   <div>
     <h1>锂电 + 储能 股票池跟踪面板</h1>
     <div class="asof">数据截至 2026年6月25日 收盘</div>
-    <div class="meta">更新时间：2026-06-26 12:36:16 ｜ 红涨绿跌 ｜ 行情:腾讯财经 ｜ 市值:东方财富 ｜ 分类来源:华泰电新</div>
+    <div class="meta">更新时间：2026-06-26 12:40:30 ｜ 红涨绿跌 ｜ 行情:腾讯财经 ｜ 市值:东方财富 ｜ 分类来源:华泰电新</div>
   </div>
   <div class="cards">
     <div class="card"><div class="k">公司数</div><div class="v" id="cTotal">-</div></div>
