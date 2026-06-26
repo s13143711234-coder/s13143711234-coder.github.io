@@ -36,6 +36,11 @@
   .legend { margin-top:24px; font-size:12px; color:var(--sub); line-height:1.9; background:var(--panel); border:1px solid var(--line); border-radius:8px; padding:12px 16px; }
   .legend b { color:var(--txt); }
   .muted { color:var(--sub); }
+  .topnav { display:flex; align-items:center; gap:6px; padding:9px 24px; background:#0f2747; }
+  .topnav .brand { font-weight:700; margin-right:18px; font-size:14px; color:#fff; }
+  .topnav a { color:#cdddf3; text-decoration:none; padding:6px 14px; border-radius:7px; font-size:13px; }
+  .topnav a:hover { background:rgba(255,255,255,.12); color:#fff; }
+  .topnav a.active { background:var(--acc); color:#fff; font-weight:600; }
   .briefing { background:linear-gradient(135deg,#eef5ff,#ffffff); border:1px solid var(--line); border-left:4px solid var(--acc); border-radius:10px; padding:16px 20px; margin-bottom:8px; }
   .bf-head { font-size:16px; font-weight:700; }
   .bf-date { color:var(--sub); font-size:12px; font-weight:400; margin-left:8px; }
@@ -59,10 +64,11 @@
 </style>
 </head>
 <body>
+<nav class="topnav"><span class="brand">⚡ 锂电储能研究工作台</span><a href="index.html">盯盘面板</a><a href="scan.html" class="active">机会扫描</a></nav>
 <header>
   <h1>锂电储能 · 每日机会扫描</h1>
   <div class="asof">数据截至 2026年6月25日 收盘</div>
-  <div class="meta">更新时间：2026-06-26 12:30:56 ｜ 纯技术信号(脚本客观计算) ｜ 数据:新浪/腾讯 ｜ 仅供研究筛选，非投资建议</div>
+  <div class="meta">更新时间：2026-06-26 12:41:52 ｜ 纯技术信号(脚本客观计算) ｜ 数据:新浪/腾讯 ｜ 仅供研究筛选，非投资建议</div>
 </header>
 <div class="wrap">
 
