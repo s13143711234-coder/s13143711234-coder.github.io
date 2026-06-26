@@ -67,7 +67,7 @@
 <header>
   <h1>锂电储能 · 每日机会扫描</h1>
   <div class="asof">数据截至 2026年6月25日 收盘</div>
-  <div class="meta">更新时间：2026-06-26 13:01:32 ｜ 纯技术信号(脚本客观计算) ｜ 数据:新浪/腾讯 ｜ 仅供研究筛选，非投资建议</div>
+  <div class="meta">更新时间：2026-06-26 13:02:57 ｜ 纯技术信号(脚本客观计算) ｜ 数据:新浪/腾讯 ｜ 仅供研究筛选，非投资建议</div>
 </header>
 <div class="wrap">
 
@@ -234,7 +234,7 @@ bindSort('secTbl',()=>[secSort,secDir],(k,d)=>{secSort=k;secDir=d;},renderSec);
 bindSort('stkTbl',()=>[stkSort,stkDir],(k,d)=>{stkSort=k;stkDir=d;},renderStk);
 document.getElementById('q').addEventListener('input',renderStk);
 
-document.getElementById('legend').innerHTML='<b>信号说明（均为脚本客观计算；"疑似杯柄"为启发式，仅供初筛，需人工确认）：</b><br>'+
+document.getElementById('legend').innerHTML='<b>信号说明（均为脚本客观计算，仅供研究初筛）：</b><br>'+
   '<b>上穿20/60/120日线</b>：最近5个交易日内收盘价从下方上穿对应均线（金叉）。｜ '+
   '<b>均线多头排列</b>：MA5&gt;MA10&gt;MA20&gt;MA60。｜ '+
   '<b>放量突破60日新高</b>：收盘创60日新高且成交量≥近20日均量1.5倍。｜ '+
