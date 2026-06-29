@@ -723,7 +723,7 @@ function renderStorage(){
       lineStyle:{width:hot?3.5:1.8,color:pal[i%pal.length]},itemStyle:{color:pal[i%pal.length]},emphasis:{focus:'series'},z:hot?10:1};
   });
   const stoVal={},stoIdx={};M.forEach((m,i)=>{const y=m.slice(0,4),mo=+m.slice(5,7);(stoVal[y]=stoVal[y]||{})[mo]=S.scale[i];(stoIdx[y]=stoIdx[y]||{})[mo]=i;});
-  mk('s1',{color:pal,tooltip:{...baseTip,formatter:ps=>{if(!ps.length)return'';const mo=ps[0].dataIndex+1;let s=ps[0].axisValue+'<br>';ps.forEach(p=>{const y=p.seriesName.slice(0,-1),pry=String(+y-1);const v=(stoVal[y]||{})[mo],i=(stoIdx[y]||{})[mo];const yoy=i!=null?S.scaleYoY[i]:null,ytd=i!=null?scaleYTD[i]:null;const f=x=>x==null?'-':((x>=0?'+':'')+x.toFixed(1)+'%');const extra=(stoVal[pry]&&(yoy!=null||ytd!=null))?`　<span style="color:#8b98a8">同比${f(yoy)} · 累计${f(ytd)}</span>`:'';s+=`${p.marker}${p.seriesName}：${v==null?'-':v.toFixed(1)+' GWh'}${extra}<br>`;});return s;}},
+  mk('s1',{color:pal,tooltip:{...baseTip,formatter:ps=>{if(!ps.length)return'';const mo=ps[0].dataIndex+1;let s=ps[0].axisValue+'<br>';ps.forEach(p=>{const y=p.seriesName.slice(0,-1),pry=String(+y-1);const v=(stoVal[y]||{})[mo],i=(stoIdx[y]||{})[mo];const yoy=i!=null?S.scaleYoY[i]:null,ytd=i!=null?scaleYTD[i]:null;let cum=null;if(stoVal[y]){cum=0;for(let k=1;k<=mo;k++)if((stoVal[y]||{})[k]!=null)cum+=(stoVal[y]||{})[k];}const f=x=>x==null?'-':((x>=0?'+':'')+x.toFixed(1)+'%');const extra=(stoVal[pry]&&(yoy!=null||ytd!=null))?'　<span style="color:#8b98a8">同比'+f(yoy)+' · 累计'+f(ytd)+'</span>':'';s+=p.marker+p.seriesName+'：'+(v==null?'-':v.toFixed(1)+' GWh')+(cum!=null?'　累计 '+cum.toFixed(1)+' GWh':'')+extra+'<br>';});return s;}},
     legend:{top:0,right:0,textStyle:{color:'#5d7aa6'},inactiveColor:'#b9c9e2',itemWidth:18,itemHeight:10},
     grid:{left:50,right:18,top:36,bottom:30},
     xAxis:{type:'category',data:MM,boundaryGap:false,axisLine:axL,axisLabel:axT},
@@ -764,16 +764,16 @@ function renderStorage(){
       tooltip:{...baseTip,formatter:ps=>{
         if(!ps.length)return'';
         const i=ps[0].dataIndex;
-        let s=MM[i]+'<br>';
-        s+='<span style="display:inline-block;margin-right:4px;border-radius:50%;width:10px;height:10px;background:#1f6feb"></span>2025年当月装机：'+(m25[i]!=null?m25[i].toFixed(2)+' GWh':'-')+'<br>';
-        s+='&emsp;&emsp;&emsp;累计装机：'+(c25[i]!=null?c25[i].toFixed(2)+' GWh':'-')+'<br>';
-        if(m26[i]!=null||i<5){
-          s+='<span style="display:inline-block;margin-right:4px;border-radius:50%;width:10px;height:10px;background:#f85149"></span>2026年当月装机：'+(m26[i]!=null?m26[i].toFixed(2)+' GWh':'-')+'<br>';
-          s+='&emsp;&emsp;&emsp;累计装机：'+(c26[i]!=null?c26[i].toFixed(2)+' GWh':'-')+'<br>';
-          s+='&emsp;&emsp;&emsp;当月同比：'+yoFmt(mYoy[i])+'<br>';
-          s+='&emsp;&emsp;&emsp;累计同比：'+yoFmt(cYoy[i]);
+        const dot=bg=>'<span style="display:inline-block;margin-right:5px;border-radius:50%;width:9px;height:9px;background:'+bg+';vertical-align:middle"></span>';
+        const g='color:#8b98a8;font-size:11px';
+        const td=(v,pl)=>'<td style="padding:0 0 3px '+(pl?'10px':'0')+'">'+v+'</td>';
+        let rows=
+          '<tr>'+td(dot('#1f6feb')+'2025年')+td(m25[i]!=null?m25[i].toFixed(2)+' GWh':'-',true)+td(c25[i]!=null?c25[i].toFixed(2)+' GWh':'-',true)+'</tr>';
+        if(i<5){
+          rows+='<tr>'+td(dot('#f85149')+'2026年')+td(m26[i]!=null?m26[i].toFixed(2)+' GWh':'-',true)+td(c26[i]!=null?c26[i].toFixed(2)+' GWh':'-',true)+'</tr>';
+          rows+='<tr><td></td>'+td('<span style="'+g+'">同比 '+yoFmt(mYoy[i])+'</span>',true)+td('<span style="'+g+'">累计同比 '+yoFmt(cYoy[i])+'</span>',true)+'</tr>';
         }
-        return s;}},
+        return MM[i]+'<table style="border-collapse:collapse;margin-top:4px"><thead><tr><td></td><td style="'+g+';padding:0 0 3px 10px">当月装机</td><td style="'+g+';padding:0 0 3px 10px">累计装机</td></tr></thead><tbody>'+rows+'</tbody></table>';}}},
       legend:{top:0,right:0,textStyle:{color:'#5d7aa6'},inactiveColor:'#b9c9e2'},
       grid:{left:50,right:18,top:36,bottom:30},
       xAxis:{type:'category',data:MM,boundaryGap:false,axisLine:axL,axisLabel:axT},
