@@ -160,8 +160,7 @@ var _hmt = _hmt || [];
   </div>
   <div class="sec green">三、国内储能装机</div>
   <div class="grid">
-    <div class="card"><h2>2025年国内新型储能装机</h2><div class="ch">单位：GWh · 月度累计（左轴）/ 当月新增（右轴）</div><div id="es_inst_2025" class="chart"></div><div class="src">资料来源：中电联</div></div>
-    <div class="card"><h2>2026年国内新型储能装机</h2><div class="ch">单位：GWh · 悬停查看当月同比/累计同比</div><div id="es_inst_2026" class="chart"></div><div class="src">资料来源：中电联</div></div>
+    <div class="card full"><h2>国内新型储能装机（各年同期对比）</h2><div class="ch">单位：GWh · 当月新增 · 悬停查看累计装机/同比</div><div id="es_inst" class="chart"></div><div class="src">资料来源：中电联</div></div>
   </div>
   <div class="sec red">四、美国大储装机（EIA）</div>
   <div class="meta" style="margin-top:2px">注：仅统计 1MW 以上储能项目，统计口径低于美国实际装机总量。</div>
@@ -749,30 +748,41 @@ function renderStorage(){
   priceChart('sp_sys',S.sys2,S.sys4,'储能系统-2h','储能系统-4h');
   priceChart('sp_epc',S.epc2,S.epc4,'储能EPC-2h','储能EPC-4h');
   // 国内储能装机（2025 / 2026）
+  
+
+  // 国内储能装机（各年同期对比）
   (function(){
     const E=ESINSTALL;
-    const yoFmt=v=>{if(v==null)return'';const c=v>=0?'#f85149':'#1f9d55';return '<span style="color:'+c+'">'+(v>=0?'+':'')+v.toFixed(1)+'%</span>';};
-    function esChart(id,yr,months,monthly,cumul,momYoy,cumulYoy){
-      mk(id,{color:['#1f6feb','rgba(210,153,34,0.7)'],
-        tooltip:{...baseTip,formatter:ps=>{if(!ps.length)return'';const i=ps[0].dataIndex;
-          let s=yr+' '+months[i]+'<br>';
-          s+='<span style="display:inline-block;margin-right:4px;border-radius:50%;width:10px;height:10px;background:#1f6feb"></span>累计装机：'+(cumul[i]!=null?cumul[i].toFixed(2)+' GWh':'-')+'<br>';
-          s+='<span style="display:inline-block;margin-right:4px;border-radius:50%;width:10px;height:10px;background:rgba(210,153,34,0.7)"></span>当月新增：'+(monthly[i]!=null?monthly[i].toFixed(2)+' GWh':'-')+'<br>';
-          if(momYoy&&momYoy[i]!=null)s+='当月同比：'+yoFmt(momYoy[i])+'<br>';
-          if(cumulYoy&&cumulYoy[i]!=null)s+='累计同比：'+yoFmt(cumulYoy[i]);
-          return s;}},
-        legend:{top:0,right:0,textStyle:{color:'#5d7aa6'},inactiveColor:'#b9c9e2'},
-        grid:{left:54,right:54,top:36,bottom:30},
-        xAxis:{type:'category',data:months,boundaryGap:true,axisLine:axL,axisLabel:axT},
-        yAxis:[{type:'value',name:'累计GWh',scale:true,splitLine:splL,axisLabel:axT,nameTextStyle:{color:'#5d7aa6',align:'right'}},
-               {type:'value',name:'当月GWh',scale:true,position:'right',splitLine:{show:false},axisLabel:{...axT,formatter:v=>v.toFixed(0)},nameTextStyle:{color:'#d29922',align:'left'}}],
-        series:[
-          {name:'累计装机',type:'line',data:cumul,smooth:false,symbol:'circle',symbolSize:5,lineStyle:{width:2.5,color:'#1f6feb'},itemStyle:{color:'#1f6feb'},yAxisIndex:0},
-          {name:'当月新增',type:'bar',data:monthly,barMaxWidth:22,itemStyle:{color:'rgba(210,153,34,0.6)'},yAxisIndex:1}
-        ]},storageCharts);
-    }
-    esChart('es_inst_2025','2025年',E.y25.months,E.y25.monthly,E.y25.cumul,null,null);
-    esChart('es_inst_2026','2026年',E.y26.months,E.y26.monthly,E.y26.cumul,E.y26.momYoy,E.y26.cumulYoy);
+    const MM=['1月','2月','3月','4月','5月','6月','7月','8月','9月','10月','11月','12月'];
+    const pad12=a=>{const r=a.slice();while(r.length<12)r.push(null);return r;};
+    const m25=E.y25.monthly, m26=pad12(E.y26.monthly);
+    const c25=E.y25.cumul,   c26=pad12(E.y26.cumul);
+    const mYoy=pad12(E.y26.momYoy), cYoy=pad12(E.y26.cumulYoy);
+    const yoFmt=v=>{if(v==null)return'-';const c=v>=0?'#f85149':'#1f9d55';return '<span style="color:'+c+'">'+(v>=0?'+':'')+v.toFixed(1)+'%</span>';};
+    mk('es_inst',{
+      color:['#1f6feb','#f85149'],
+      tooltip:{...baseTip,formatter:ps=>{
+        if(!ps.length)return'';
+        const i=ps[0].dataIndex;
+        let s=MM[i]+'<br>';
+        s+='<span style="display:inline-block;margin-right:4px;border-radius:50%;width:10px;height:10px;background:#1f6feb"></span>2025年当月装机：'+(m25[i]!=null?m25[i].toFixed(2)+' GWh':'-')+'<br>';
+        s+='&emsp;&emsp;&emsp;累计装机：'+(c25[i]!=null?c25[i].toFixed(2)+' GWh':'-')+'<br>';
+        if(m26[i]!=null||i<5){
+          s+='<span style="display:inline-block;margin-right:4px;border-radius:50%;width:10px;height:10px;background:#f85149"></span>2026年当月装机：'+(m26[i]!=null?m26[i].toFixed(2)+' GWh':'-')+'<br>';
+          s+='&emsp;&emsp;&emsp;累计装机：'+(c26[i]!=null?c26[i].toFixed(2)+' GWh':'-')+'<br>';
+          s+='&emsp;&emsp;&emsp;当月同比：'+yoFmt(mYoy[i])+'<br>';
+          s+='&emsp;&emsp;&emsp;累计同比：'+yoFmt(cYoy[i]);
+        }
+        return s;}},
+      legend:{top:0,right:0,textStyle:{color:'#5d7aa6'},inactiveColor:'#b9c9e2'},
+      grid:{left:50,right:18,top:36,bottom:30},
+      xAxis:{type:'category',data:MM,boundaryGap:false,axisLine:axL,axisLabel:axT},
+      yAxis:{type:'value',name:'GWh',scale:true,splitLine:splL,axisLabel:axT,nameTextStyle:{color:'#5d7aa6',align:'right'}},
+      series:[
+        {name:'2025年',type:'line',data:m25,connectNulls:false,symbol:'circle',symbolSize:5,lineStyle:{width:2,color:'#1f6feb'},itemStyle:{color:'#1f6feb'}},
+        {name:'2026年',type:'line',data:m26,connectNulls:false,symbol:'circle',symbolSize:6,lineStyle:{width:3,color:'#f85149'},itemStyle:{color:'#f85149'}}
+      ]
+    },storageCharts);
   })();
 
 
