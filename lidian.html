@@ -773,7 +773,7 @@ function renderStorage(){
           rows+='<tr>'+td(dot('#f85149')+'2026年')+td(m26[i]!=null?m26[i].toFixed(2)+' GWh':'-',true)+td(c26[i]!=null?c26[i].toFixed(2)+' GWh':'-',true)+'</tr>';
           rows+='<tr><td></td>'+td('<span style="'+g+'">同比 '+yoFmt(mYoy[i])+'</span>',true)+td('<span style="'+g+'">累计同比 '+yoFmt(cYoy[i])+'</span>',true)+'</tr>';
         }
-        return MM[i]+'<table style="border-collapse:collapse;margin-top:4px"><thead><tr><td></td><td style="'+g+';padding:0 0 3px 10px">当月装机</td><td style="'+g+';padding:0 0 3px 10px">累计装机</td></tr></thead><tbody>'+rows+'</tbody></table>';}}},
+        return MM[i]+'<table style="border-collapse:collapse;margin-top:4px"><thead><tr><td></td><td style="'+g+';padding:0 0 3px 10px">当月装机</td><td style="'+g+';padding:0 0 3px 10px">累计装机</td></tr></thead><tbody>'+rows+'</tbody></table>'}},
       legend:{top:0,right:0,textStyle:{color:'#5d7aa6'},inactiveColor:'#b9c9e2'},
       grid:{left:50,right:18,top:36,bottom:30},
       xAxis:{type:'category',data:MM,boundaryGap:false,axisLine:axL,axisLabel:axT},
