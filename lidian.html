@@ -85,6 +85,8 @@ var _hmt = _hmt || [];
 <div id="cl-overlay" onclick="closeCL()"></div>
 <div id="cl-box">
   <h3>📋 更新日志</h3>
+  <div class="cl-item"><span class="cl-date">6月30日</span>面板4新增「分环节月度排产」（电池/正极/负极/隔膜/电解液各年同期对比）；「分企业月度排产」改为密码查看</div>
+  <div class="cl-item"><span class="cl-date">6月30日</span>面板3所有图表默认显示近一年（可拖动看更早）；归一化对比基准改为2025-06-30=100</div>
   <div class="cl-item"><span class="cl-date">6月30日</span>面板3材料价格全面切换为SMM：日度11图（磷酸铁锂/负极/湿法基膜/涂覆隔膜/电解液/六氟·LiFSI/VC + 周度铜箔·PCB·铝箔加工费），归一化总览改SMM，移除鑫椤月度数据</div>
   <div class="cl-item"><span class="cl-date">6月30日</span>面板4企业名称改为缩写（数据脱敏）</div>
   <div class="cl-item"><span class="cl-date">6月30日</span>面板1补欧洲5月新能源车销量；面板2补美国大储5月装机</div>
@@ -244,8 +246,16 @@ var _hmt = _hmt || [];
     若有任何使用意见或修改建议，欢迎联系邵梓洋 13143711234
   </div>
   <div class="kpis" id="schkpis"></div>
+  <div class="sec green">分环节月度排产（各年同期对比）</div>
+  <div class="grid" id="segwrap"></div>
   <div class="sec green">分企业月度排产（各年同期对比）</div>
-  <div id="schwrap"></div>
+  <div id="schlock" style="text-align:center;padding:46px 20px;background:#fff;border:1px solid var(--line);border-radius:14px;margin-top:4px">
+    <p style="color:var(--sub);font-size:14px;margin-bottom:14px">🔒 考虑到排产数据较为敏感，需输入密码查看，敬请谅解</p>
+    <input id="schpw" type="password" placeholder="请输入密码" onkeydown="if(event.key==='Enter')unlockSch()" style="padding:8px 12px;border:1px solid var(--line);border-radius:8px;font-size:14px;outline:none;width:180px"/>
+    <button onclick="unlockSch()" style="margin-left:8px;padding:8px 18px;border:none;border-radius:8px;background:var(--accent2);color:#fff;font-size:14px;cursor:pointer">确定</button>
+    <p id="schpwerr" style="color:#f85149;font-size:12px;margin-top:10px;display:none">密码错误，请重试</p>
+  </div>
+  <div id="schwrap" style="display:none"></div>
 </section>
 
 <!-- ============ TAB 5: 需求测算 ============ -->
@@ -551,11 +561,12 @@ let priceInited=false;
 function renderPrice(){
   const cpal=['#1f6feb','#1f9d55','#d29922','#f85149','#8957e5','#16a3a3'];
   const SD=SMMDAY, WD=SMMWEEK;
+  const yrAgoVal=ds=>{const t=new Date(ds[ds.length-1]);t.setFullYear(t.getFullYear()-1);for(let i=0;i<ds.length;i++){if(new Date(ds[i])>=t)return ds[i];}return ds[0];};
   document.getElementById('prange').textContent=SD.dates[0].substring(0,7)+' ~ '+SD.dates[SD.dates.length-1].substring(0,7);
   const wanTip=v=>v==null?'-':(+v/10000).toFixed(2)+' 万元/吨';
   const m2Tip=v=>v==null?'-':(+v).toFixed(3)+' 元/㎡';
   const ytTip=v=>v==null?'-':(+v).toLocaleString('zh-CN')+' 元/吨';
-  function tlChart(id,dates,defs,o){o=o||{};const sv=o.startValue||'2024-01-01';
+  function tlChart(id,dates,defs,o){o=o||{};const sv=o.startValue||yrAgoVal(dates);
     mk(id,{color:defs.map((s,i)=>s.color||cpal[i%cpal.length]),
       tooltip:{...baseTip,valueFormatter:o.tip||(v=>v==null?'-':(+v).toFixed(2))},
       legend:{top:0,right:0,textStyle:{color:'#5d7aa6'},inactiveColor:'#b9c9e2',data:defs.map(s=>s.name)},
@@ -579,8 +590,8 @@ function renderPrice(){
       dataZoom:[{type:'inside',startValue:stV},{type:'slider',height:16,bottom:8,borderColor:'#cfe0f5',textStyle:{color:'#5d7aa6'},fillerColor:'rgba(31,111,235,.12)',startValue:stV}],
       series:defs.map((s,i)=>({name:s.name,type:'line',smooth:true,showSymbol:false,connectNulls:false,data:s.data,lineStyle:{width:2.2,color:cpal[i%cpal.length]}}))
     });
-    mk('cp_es',cpTL([{name:'280Ah储能电芯',data:CP.s280},{name:'314Ah储能电芯',data:CP.s314}],' 元/Wh','2024-01-05'),priceCharts);
-    mk('cp_ev',cpTL([{name:'174Ah磷酸铁锂动力电芯',data:CP.p174},{name:'158Ah 8系三元电芯',data:CP.t158}],' 元/Wh','2024-01-05'),priceCharts);
+    mk('cp_es',cpTL([{name:'280Ah储能电芯',data:CP.s280},{name:'314Ah储能电芯',data:CP.s314}],' 元/Wh',yrAgoVal(CPD)),priceCharts);
+    mk('cp_ev',cpTL([{name:'174Ah磷酸铁锂动力电芯',data:CP.p174},{name:'158Ah 8系三元电芯',data:CP.t158}],' 元/Wh',yrAgoVal(CPD)),priceCharts);
   }
   // —— 电池库存（月度）——
   {
@@ -599,7 +610,7 @@ function renderPrice(){
       [{name:'储能电池库存',data:IV.es,yi:0},{name:'动力电池库存',data:IV.ev,yi:1}],
       [{type:'value',scale:true,splitLine:splL,axisLabel:{...axT,formatter:v=>v.toFixed(0)+'GWh'}},
        {type:'value',scale:true,splitLine:{show:false},axisLabel:{...axT,formatter:v=>v.toFixed(0)+'GWh'}}],
-      64,'2024/1'
+      64,yrAgoVal(IVD)
     ),priceCharts);
   }
   // —— 锂电材料供需平衡（产能利用率）——
@@ -623,6 +634,7 @@ function renderPrice(){
     const lexp=LITCO.export.slice(si).map(v=>v==null?null:-v);
     const lbal=LITCO.balance.slice(si);
     const lc=['#1f6feb','#1f9d55','#d29922','#8957e5','#f85149'];
+    const lsv=ld[Math.max(0,ld.length-12)];
     mk('litco_chart',{
       color:lc,
       tooltip:{...baseTip,formatter:ps=>{
@@ -643,7 +655,7 @@ function renderPrice(){
       grid:{left:72,right:18,top:36,bottom:54},
       xAxis:{type:'category',data:ld,axisLine:axL,axisLabel:{...axT,hideOverlap:true,showMaxLabel:true}},
       yAxis:{type:'value',scale:true,splitLine:splL,axisLabel:{...axT,formatter:v=>Math.abs(v)>=10000?(v/10000).toFixed(0)+'万':v}},
-      dataZoom:[{type:'inside'},{type:'slider',height:16,bottom:8,borderColor:'#cfe0f5',textStyle:{color:'#5d7aa6'},fillerColor:'rgba(31,111,235,.12)'}],
+      dataZoom:[{type:'inside',startValue:lsv},{type:'slider',height:16,bottom:8,borderColor:'#cfe0f5',textStyle:{color:'#5d7aa6'},fillerColor:'rgba(31,111,235,.12)',startValue:lsv}],
       series:[
         {name:'需求',type:'line',smooth:true,showSymbol:false,connectNulls:false,data:ldem,lineStyle:{width:2.2,color:lc[0]}},
         {name:'产量',type:'line',smooth:true,showSymbol:false,connectNulls:false,data:lpro,lineStyle:{width:2.2,color:lc[1]}},
@@ -669,7 +681,7 @@ function renderPrice(){
     {id:'pg_al',t:'锂电铝箔加工费',s:'单位：万元/吨 · 周度'}
   ];
   grid.innerHTML=cards.map(c=>`<div class="card"><h2>${c.t}</h2><div class="ch">${c.s}</div><div id="${c.id}" class="chart"></div><div class="src">资料来源：SMM</div></div>`).join('');
-  tlChart('pg_lfpfee',LFPFEE.dates,[{name:'压实密度≥2.50 g/cm³',data:LFPFEE.d250},{name:'压实密度≥2.60 g/cm³',data:LFPFEE.d260}],{tip:ytTip,axisWan:true,startValue:LFPFEE.dates[0]});
+  tlChart('pg_lfpfee',LFPFEE.dates,[{name:'压实密度≥2.50 g/cm³',data:LFPFEE.d250},{name:'压实密度≥2.60 g/cm³',data:LFPFEE.d260}],{tip:ytTip,axisWan:true});
   tlChart('pg_lfp',SD.dates,[{name:'动力型(压实≥2.50)',data:SD.lfpA},{name:'储能型(压实≥2.50)',data:SD.lfpE}],{tip:wanTip,axisWan:true});
   tlChart('pg_anode',SD.dates,[{name:'中端动力人造石墨',data:SD.anodeP},{name:'中端储能人造石墨',data:SD.anodeE}],{tip:wanTip,axisWan:true});
   tlChart('pg_sep',SD.dates,[{name:'5μm',data:SD.sep5},{name:'7μm',data:SD.sep7},{name:'9μm',data:SD.sep9}],{tip:m2Tip});
@@ -677,9 +689,9 @@ function renderPrice(){
   tlChart('pg_elec',SD.dates,[{name:'磷酸铁锂用',data:SD.elecLFP},{name:'三元动力用',data:SD.elecNCM}],{tip:wanTip,axisWan:true});
   tlChart('pg_6f',SD.dates,[{name:'六氟磷酸锂(国产)',data:SD.lf6},{name:'LiFSI',data:SD.lifsi}],{tip:wanTip,axisWan:true});
   tlChart('pg_vc',SD.dates,[{name:'碳酸亚乙烯酯(VC)',data:SD.vc}],{tip:wanTip,axisWan:true});
-  tlChart('pg_cu',WD.cuDates,[{name:'4.5μm',data:WD.cu45},{name:'6μm',data:WD.cu6},{name:'8μm',data:WD.cu8}],{tip:wanTip,axisWan:true,startValue:WD.cuDates[0]});
-  tlChart('pg_pcb',WD.cuDates,[{name:'HTE 18μm',data:WD.hte18},{name:'HTE 35μm',data:WD.hte35},{name:'HTE 70μm',data:WD.hte70}],{tip:wanTip,axisWan:true,startValue:WD.cuDates[0]});
-  tlChart('pg_al',WD.alDates,[{name:'12μm',data:WD.al12},{name:'13μm',data:WD.al13}],{tip:wanTip,axisWan:true,startValue:WD.alDates[0]});
+  tlChart('pg_cu',WD.cuDates,[{name:'4.5μm',data:WD.cu45},{name:'6μm',data:WD.cu6},{name:'8μm',data:WD.cu8}],{tip:wanTip,axisWan:true});
+  tlChart('pg_pcb',WD.cuDates,[{name:'HTE 18μm',data:WD.hte18},{name:'HTE 35μm',data:WD.hte35},{name:'HTE 70μm',data:WD.hte70}],{tip:wanTip,axisWan:true});
+  tlChart('pg_al',WD.alDates,[{name:'12μm',data:WD.al12},{name:'13μm',data:WD.al13}],{tip:wanTip,axisWan:true});
 
   // —— 归一化总览（SMM 日度）——
   const ovKeys=[
@@ -690,11 +702,9 @@ function renderPrice(){
     {name:'六氟磷酸锂',data:SD.lf6,color:'#8957e5'},
     {name:'VC',data:SD.vc,color:'#16a3a3'}
   ];
-  let baseIdx=-1;const sB=SD.dates.findIndex(d=>d>='2024-01-01');
-  for(let i=Math.max(0,sB);i<SD.dates.length;i++){if(ovKeys.every(k=>k.data[i]!=null)){baseIdx=i;break;}}
-  if(baseIdx<0){for(let i=0;i<SD.dates.length;i++){if(ovKeys.every(k=>k.data[i]!=null)){baseIdx=i;break;}}}
-  document.getElementById('povsub').textContent='各材料代表规格 · 以 '+SD.dates[baseIdx]+' = 100 · 日度（可框选缩放）';
-  const ovDefs=ovKeys.map(k=>{const base=k.data[baseIdx];return {name:k.name,color:k.color,data:k.data.map(v=>(v==null||base==null||!base)?null:+(v/base*100).toFixed(1))};});
+  let baseIdx=SD.dates.findIndex(d=>d>='2025-06-30'); if(baseIdx<0)baseIdx=SD.dates.length-1;
+  document.getElementById('povsub').textContent='各材料代表规格 · 以 '+SD.dates[baseIdx]+' = 100 · 日度（默认显示近一年，可框选缩放看更早）';
+  const ovDefs=ovKeys.map(k=>{let b=k.data[baseIdx];if(b==null){for(let i=baseIdx;i<k.data.length;i++){if(k.data[i]!=null){b=k.data[i];break;}}}return {name:k.name,color:k.color,data:k.data.map(v=>(v==null||b==null||!b)?null:+(v/b*100).toFixed(1))};});
   tlChart('pov',SD.dates,ovDefs,{tip:v=>v==null?'-':(+v).toFixed(1)});
 
   // —— KPI ——
@@ -913,31 +923,56 @@ function renderSchedule(){
     S.companies.forEach(c=>{const a=c.years[y1];if(a)a.forEach((v,m)=>{if(v!=null&&m+1>lm)lm=m+1;});});
     const el=document.getElementById('schrange');if(el)el.textContent=`${y0}-01 ~ ${y1}-${String(lm).padStart(2,'0')}`;})();
 
-  // —— 全部企业，按环节分组，一页平铺 ——
-  let html='';
-  S.segments.forEach(sg=>{
-    const cos=S.companies.filter(c=>c.seg===sg.seg&&!c.hidden); if(!cos.length)return;
-    html+=`<div class="seglabel">${sg.seg}（${sg.unit}）</div><div class="schgrid">`;
-    cos.forEach((c,i)=>{ html+=`<div class="card"><h2>${c.name}</h2><div class="ch" id="schsub_${c.seg}_${i}"></div><div class="chart" id="schc_${c.seg}_${i}"></div></div>`; });
-    html+='</div>';
-  });
-  document.getElementById('schwrap').innerHTML=html;
-  S.segments.forEach(sg=>{
-    const cos=S.companies.filter(c=>c.seg===sg.seg&&!c.hidden);
-    cos.forEach((co,i)=>{
-      const el=document.getElementById('schc_'+co.seg+'_'+i); if(!el)return;
+  // —— 分环节总排产（各年同期对比，样本企业合计）——
+  {
+    const grid=document.getElementById('segwrap');
+    grid.innerHTML=S.segments.map(sg=>`<div class="card"><h2>${sg.seg}（${sg.unit}）</h2><div class="ch">各年同期对比 · 每年一条折线 · 样本企业合计</div><div class="chart" id="segc_${sg.seg}"></div></div>`).join('');
+    S.segments.forEach(sg=>{
+      const el=document.getElementById('segc_'+sg.seg); if(!el)return;
       const ch=echarts.init(el); scheduleCharts.push(ch);
-      const yrs=Object.keys(co.years).sort(); const latest=yrs[yrs.length-1]; const unit=co.unit;
-      const series=yrs.map(y=>{const hot=y===latest;const col=schColor(y);return {name:y+'年',type:'line',data:co.years[y],connectNulls:false,symbol:'circle',symbolSize:hot?5:3,lineStyle:{width:hot?3:1.6,color:col},itemStyle:{color:col},emphasis:{focus:'series'},z:hot?10:1};});
+      const agg=segAgg(sg.seg); const yrs=Object.keys(agg.years).sort(); const latest=yrs[yrs.length-1]; const unit=sg.unit;
+      const series=yrs.map(y=>{const hot=y===latest;const col=schColor(y);return {name:y+'年',type:'line',data:agg.years[y],connectNulls:false,symbol:'circle',symbolSize:hot?5:3,lineStyle:{width:hot?3:1.6,color:col},itemStyle:{color:col},emphasis:{focus:'series'},z:hot?10:1};});
       ch.setOption({tooltip:{...baseTip,valueFormatter:v=>v==null?'-':(+v).toFixed(2)+unit},
         legend:{top:0,right:0,textStyle:{color:'#5d7aa6',fontSize:11},inactiveColor:'#b9c9e2',itemWidth:14,itemHeight:8,itemGap:7},
         grid:{left:46,right:14,top:30,bottom:26},
         xAxis:{type:'category',data:MM,boundaryGap:false,axisLine:axL,axisLabel:{...axT,fontSize:11}},
         yAxis:{type:'value',scale:true,splitLine:splL,axisLabel:{...axT,fontSize:11}},series});
-      const L=schLatest(co); const sub=document.getElementById('schsub_'+co.seg+'_'+i);
-      if(L&&sub){ sub.innerHTML=`最新 ${L.y}年${L.m}月：${L.val}${unit}${pctSpan('当月同比',L.yoy)}${pctSpan('累计同比',L.ytd)}`; }
     });
-  });
+  }
+
+  // —— 分企业（密码解锁后渲染）——
+  window.renderSchCompanies=function(){
+    const wrap=document.getElementById('schwrap'); if(wrap.dataset.done)return; wrap.dataset.done='1';
+    let html='';
+    S.segments.forEach(sg=>{
+      const cos=S.companies.filter(c=>c.seg===sg.seg&&!c.hidden); if(!cos.length)return;
+      html+=`<div class="seglabel">${sg.seg}（${sg.unit}）</div><div class="schgrid">`;
+      cos.forEach((c,i)=>{ html+=`<div class="card"><h2>${c.name}</h2><div class="ch" id="schsub_${c.seg}_${i}"></div><div class="chart" id="schc_${c.seg}_${i}"></div></div>`; });
+      html+='</div>';
+    });
+    wrap.innerHTML=html;
+    S.segments.forEach(sg=>{
+      const cos=S.companies.filter(c=>c.seg===sg.seg&&!c.hidden);
+      cos.forEach((co,i)=>{
+        const el=document.getElementById('schc_'+co.seg+'_'+i); if(!el)return;
+        const ch=echarts.init(el); scheduleCharts.push(ch);
+        const yrs=Object.keys(co.years).sort(); const latest=yrs[yrs.length-1]; const unit=co.unit;
+        const series=yrs.map(y=>{const hot=y===latest;const col=schColor(y);return {name:y+'年',type:'line',data:co.years[y],connectNulls:false,symbol:'circle',symbolSize:hot?5:3,lineStyle:{width:hot?3:1.6,color:col},itemStyle:{color:col},emphasis:{focus:'series'},z:hot?10:1};});
+        ch.setOption({tooltip:{...baseTip,valueFormatter:v=>v==null?'-':(+v).toFixed(2)+unit},
+          legend:{top:0,right:0,textStyle:{color:'#5d7aa6',fontSize:11},inactiveColor:'#b9c9e2',itemWidth:14,itemHeight:8,itemGap:7},
+          grid:{left:46,right:14,top:30,bottom:26},
+          xAxis:{type:'category',data:MM,boundaryGap:false,axisLine:axL,axisLabel:{...axT,fontSize:11}},
+          yAxis:{type:'value',scale:true,splitLine:splL,axisLabel:{...axT,fontSize:11}},series});
+        const L=schLatest(co); const sub=document.getElementById('schsub_'+co.seg+'_'+i);
+        if(L&&sub){ sub.innerHTML=`最新 ${L.y}年${L.m}月：${L.val}${unit}${pctSpan('当月同比',L.yoy)}${pctSpan('累计同比',L.ytd)}`; }
+      });
+    });
+  };
+}
+function unlockSch(){
+  const pw=(document.getElementById('schpw')||{}).value;
+  if(pw==='htdx'){ document.getElementById('schlock').style.display='none'; const w=document.getElementById('schwrap'); w.style.display='block'; if(window.renderSchCompanies)window.renderSchCompanies(); setTimeout(()=>scheduleCharts.forEach(c=>c.resize()),0); }
+  else { document.getElementById('schpwerr').style.display='block'; }
 }
 
 // ================= 标签切换 =================
