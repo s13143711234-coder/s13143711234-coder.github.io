@@ -1,0 +1,36 @@
+
+
+  // 国内储能装机（各年同期对比）
+  (function(){
+    const E=ESINSTALL;
+    const MM=['1月','2月','3月','4月','5月','6月','7月','8月','9月','10月','11月','12月'];
+    const pad12=a=>{const r=a.slice();while(r.length<12)r.push(null);return r;};
+    const m25=E.y25.monthly, m26=pad12(E.y26.monthly);
+    const c25=E.y25.cumul,   c26=pad12(E.y26.cumul);
+    const mYoy=pad12(E.y26.momYoy), cYoy=pad12(E.y26.cumulYoy);
+    const yoFmt=v=>{if(v==null)return'-';const c=v>=0?'#f85149':'#1f9d55';return '<span style="color:'+c+'">'+(v>=0?'+':'')+v.toFixed(1)+'%</span>';};
+    mk('es_inst',{
+      color:['#1f6feb','#f85149'],
+      tooltip:{...baseTip,formatter:ps=>{
+        if(!ps.length)return'';
+        const i=ps[0].dataIndex;
+        let s=MM[i]+'<br>';
+        s+='<span style="display:inline-block;margin-right:4px;border-radius:50%;width:10px;height:10px;background:#1f6feb"></span>2025年当月装机：'+(m25[i]!=null?m25[i].toFixed(2)+' GWh':'-')+'<br>';
+        s+='&emsp;&emsp;&emsp;累计装机：'+(c25[i]!=null?c25[i].toFixed(2)+' GWh':'-')+'<br>';
+        if(m26[i]!=null||i<5){
+          s+='<span style="display:inline-block;margin-right:4px;border-radius:50%;width:10px;height:10px;background:#f85149"></span>2026年当月装机：'+(m26[i]!=null?m26[i].toFixed(2)+' GWh':'-')+'<br>';
+          s+='&emsp;&emsp;&emsp;累计装机：'+(c26[i]!=null?c26[i].toFixed(2)+' GWh':'-')+'<br>';
+          s+='&emsp;&emsp;&emsp;当月同比：'+yoFmt(mYoy[i])+'<br>';
+          s+='&emsp;&emsp;&emsp;累计同比：'+yoFmt(cYoy[i]);
+        }
+        return s;}},
+      legend:{top:0,right:0,textStyle:{color:'#5d7aa6'},inactiveColor:'#b9c9e2'},
+      grid:{left:50,right:18,top:36,bottom:30},
+      xAxis:{type:'category',data:MM,boundaryGap:false,axisLine:axL,axisLabel:axT},
+      yAxis:{type:'value',name:'GWh',scale:true,splitLine:splL,axisLabel:axT,nameTextStyle:{color:'#5d7aa6',align:'right'}},
+      series:[
+        {name:'2025年',type:'line',data:m25,connectNulls:false,symbol:'circle',symbolSize:5,lineStyle:{width:2,color:'#1f6feb'},itemStyle:{color:'#1f6feb'}},
+        {name:'2026年',type:'line',data:m26,connectNulls:false,symbol:'circle',symbolSize:6,lineStyle:{width:3,color:'#f85149'},itemStyle:{color:'#f85149'}}
+      ]
+    },storageCharts);
+  })();
