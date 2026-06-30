@@ -935,7 +935,7 @@ function renderSchedule(){
       const agg=segAgg(sg.seg); const yrs=Object.keys(agg.years).sort(); const latest=yrs[yrs.length-1]; const unit=sg.unit;
       const series=yrs.map(y=>{const hot=y===latest;const col=schColor(y);return {name:y+'年',type:'line',data:agg.years[y],connectNulls:false,symbol:'circle',symbolSize:hot?5:3,lineStyle:{width:hot?3:1.6,color:col},itemStyle:{color:col},emphasis:{focus:'series'},z:hot?10:1};});
       const segTip=ps=>{if(!ps.length)return'';const m=ps[0].dataIndex;let s=ps[0].axisValue+'<br>';const cl=x=>x>=0?'#f85149':'#1f9d55';const f=x=>x==null?'<span style="color:#8b98a8">-</span>':'<span style="color:'+cl(x)+'">'+(x>=0?'+':'')+x.toFixed(1)+'%</span>';ps.forEach(p=>{const y=p.seriesName.replace('年','');const a=agg.years[y];if(!a)return;const pa=agg.years[String(+y-1)];const v=a[m];if(v==null){s+=p.marker+p.seriesName+'：-<br>';return;}const pv=(m>0)?a[m-1]:(pa?pa[11]:null);const mom=(pv!=null&&pv!==0)?(v-pv)/pv*100:null;const yv=pa?pa[m]:null;const yoy=(yv!=null&&yv!==0)?(v-yv)/yv*100:null;let cc=0,pc=0,hp=false;for(let k=0;k<=m;k++){if(a[k]!=null)cc+=a[k];if(pa&&pa[k]!=null){pc+=pa[k];hp=true;}}const ytd=(hp&&pc>0)?(cc/pc-1)*100:null;s+=p.marker+p.seriesName+'：'+(+v).toFixed(2)+unit+'　<span style="color:#8b98a8">当月同比</span>'+f(yoy)+' <span style="color:#8b98a8">累计同比</span>'+f(ytd)+'<br>';});return s;};
-      ch.setOption({tooltip:{...baseTip,confine:true,extraCssText:'max-width:330px;white-space:normal;line-height:1.5',formatter:segTip},
+      ch.setOption({tooltip:{...baseTip,confine:true,extraCssText:'white-space:nowrap;line-height:1.6',formatter:segTip},
         legend:{top:0,right:0,textStyle:{color:'#5d7aa6',fontSize:11},inactiveColor:'#b9c9e2',itemWidth:14,itemHeight:8,itemGap:7},
         grid:{left:46,right:14,top:30,bottom:26},
         xAxis:{type:'category',data:MM,boundaryGap:false,axisLine:axL,axisLabel:{...axT,fontSize:11}},
@@ -959,7 +959,7 @@ function renderSchedule(){
         legend:{top:0,right:0,textStyle:{color:'#5d7aa6',fontSize:11},inactiveColor:'#b9c9e2',itemWidth:14,itemHeight:8,itemGap:7},
         grid:{left:46,right:14,top:30,bottom:26},
         xAxis:{type:'category',data:MM,boundaryGap:false,axisLine:axL,axisLabel:{...axT,fontSize:11}},
-        yAxis:{type:'value',scale:true,splitLine:splL,axisLabel:{...axT,fontSize:11,formatter:'{value}%'}},series});
+        yAxis:{type:'value',min:-20,max:20,splitLine:splL,axisLabel:{...axT,fontSize:11,formatter:'{value}%'}},series});
       const a=agg.years[latest],pa=agg.years[String(+latest-1)];let li=-1;for(let i=11;i>=0;i--){if(a[i]!=null){li=i;break;}}
       const sub=document.getElementById('segmsub_'+sg.seg);
       if(li>=0&&sub){const pv=(li>0)?a[li-1]:(pa?pa[11]:null);const cm=(pv!=null&&pv!==0)?(a[li]-pv)/pv*100:null;const py=pa?pa[li]:null,ppv=(li>0)?(pa?pa[li-1]:null):(agg.years[String(+latest-2)]?agg.years[String(+latest-2)][11]:null);const lm=(py!=null&&ppv!=null&&ppv!==0)?(py-ppv)/ppv*100:null;sub.innerHTML=latest+'年'+(li+1)+'月环比 '+(cm==null?'-':(cm>=0?'+':'')+cm.toFixed(1)+'%')+'　·　'+(+latest-1)+'年同期 '+(lm==null?'-':(lm>=0?'+':'')+lm.toFixed(1)+'%');}
