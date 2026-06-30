@@ -926,18 +926,19 @@ function renderSchedule(){
   // —— 分环节总排产（各年同期对比，样本企业合计）——
   {
     const grid=document.getElementById('segwrap');
-    grid.innerHTML=S.segments.map(sg=>`<div class="card"><h2>${sg.seg}（${sg.unit}）</h2><div class="ch">各年同期对比 · 样本企业合计 · 悬停看环比/同比/累计同比</div><div class="chart" id="segc_${sg.seg}"></div></div>`).join('');
+    grid.innerHTML=S.segments.map(sg=>`<div class="card"><h2>${sg.seg}（${sg.unit}）</h2><div class="ch">各年同期对比 · 样本企业合计 · 悬停看环比/同比/累计同比</div><div class="ch" id="segsub_${sg.seg}"></div><div class="chart" id="segc_${sg.seg}"></div></div>`).join('');
     S.segments.forEach(sg=>{
       const el=document.getElementById('segc_'+sg.seg); if(!el)return;
       const ch=echarts.init(el); scheduleCharts.push(ch);
       const agg=segAgg(sg.seg); const yrs=Object.keys(agg.years).sort(); const latest=yrs[yrs.length-1]; const unit=sg.unit;
       const series=yrs.map(y=>{const hot=y===latest;const col=schColor(y);return {name:y+'年',type:'line',data:agg.years[y],connectNulls:false,symbol:'circle',symbolSize:hot?5:3,lineStyle:{width:hot?3:1.6,color:col},itemStyle:{color:col},emphasis:{focus:'series'},z:hot?10:1};});
       const segTip=ps=>{if(!ps.length)return'';const m=ps[0].dataIndex;let s=ps[0].axisValue+'<br>';const cl=x=>x>=0?'#f85149':'#1f9d55';const f=x=>x==null?'<span style="color:#8b98a8">-</span>':'<span style="color:'+cl(x)+'">'+(x>=0?'+':'')+x.toFixed(1)+'%</span>';ps.forEach(p=>{const y=p.seriesName.replace('年','');const a=agg.years[y];if(!a)return;const pa=agg.years[String(+y-1)];const v=a[m];if(v==null){s+=p.marker+p.seriesName+'：-<br>';return;}const pv=(m>0)?a[m-1]:(pa?pa[11]:null);const mom=(pv!=null&&pv!==0)?(v-pv)/pv*100:null;const yv=pa?pa[m]:null;const yoy=(yv!=null&&yv!==0)?(v-yv)/yv*100:null;let cc=0,pc=0,hp=false;for(let k=0;k<=m;k++){if(a[k]!=null)cc+=a[k];if(pa&&pa[k]!=null){pc+=pa[k];hp=true;}}const ytd=(hp&&pc>0)?(cc/pc-1)*100:null;s+=p.marker+p.seriesName+'：'+(+v).toFixed(2)+unit+'　<span style="color:#8b98a8">环比</span>'+f(mom)+' <span style="color:#8b98a8">同比</span>'+f(yoy)+' <span style="color:#8b98a8">累计</span>'+f(ytd)+'<br>';});return s;};
-      ch.setOption({tooltip:{...baseTip,formatter:segTip},
+      ch.setOption({tooltip:{...baseTip,confine:true,extraCssText:'max-width:330px;white-space:normal;line-height:1.5',formatter:segTip},
         legend:{top:0,right:0,textStyle:{color:'#5d7aa6',fontSize:11},inactiveColor:'#b9c9e2',itemWidth:14,itemHeight:8,itemGap:7},
         grid:{left:46,right:14,top:30,bottom:26},
         xAxis:{type:'category',data:MM,boundaryGap:false,axisLine:axL,axisLabel:{...axT,fontSize:11}},
         yAxis:{type:'value',scale:true,splitLine:splL,axisLabel:{...axT,fontSize:11}},series});
+      const L=schLatest(agg);const sub=document.getElementById('segsub_'+sg.seg);if(L&&sub)sub.innerHTML='最新 '+L.y+'年'+L.m+'月：'+(+L.val).toFixed(2)+unit+pctSpan('环比',L.mom)+pctSpan('当月同比',L.yoy)+pctSpan('累计同比',L.ytd);
     });
   }
 
