@@ -349,7 +349,7 @@ const SMMWEEK={cuDates:["2021-06-04","2021-06-11","2021-06-18","2021-06-25","202
 const dongliCharts=[], priceCharts=[], storageCharts=[], scheduleCharts=[], demandCharts=[];
 function mk(id,opt,bucket){const ch=echarts.init(document.getElementById(id));ch.setOption(opt);bucket.push(ch);return ch;}
 window.addEventListener('resize',()=>{dongliCharts.concat(priceCharts).concat(storageCharts).concat(scheduleCharts).concat(demandCharts).forEach(c=>c.resize());});
-const baseTip={trigger:'axis',backgroundColor:'#ffffff',borderColor:'#cfe0f5',textStyle:{color:'#16335f'}};
+const baseTip={trigger:'axis',confine:true,backgroundColor:'#ffffff',borderColor:'#cfe0f5',textStyle:{color:'#16335f'}};
 const axL={lineStyle:{color:'#cfe0f5'}}, axT={color:'#5d7aa6'}, splL={lineStyle:{color:'#e3edf9'}};
 const nz=v=>(v===0||v==null)?null:v;
 function chgSpan(p,label,suffix,bold){
