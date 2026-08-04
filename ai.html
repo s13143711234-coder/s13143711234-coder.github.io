@@ -131,8 +131,8 @@
 
   <div class="sec gold">物价</div>
   <div class="grid">
-    <div class="card"><h2>CPI</h2><div class="ch">线＝当月同比（左轴%）· 柱＝环比（右轴%）</div><div id="q_cpi" class="chart"></div><div class="src">资料来源：Wind、国家统计局</div></div>
-    <div class="card"><h2>PPI</h2><div class="ch">线＝当月同比（左轴%）· 柱＝环比（右轴%）</div><div id="q_ppi" class="chart"></div><div class="src">资料来源：Wind、国家统计局</div></div>
+    <div class="card"><h2>CPI</h2><div class="ch">单位：% · 线＝当月同比 · 柱＝环比 · 共用一个纵轴</div><div id="q_cpi" class="chart"></div><div class="src">资料来源：Wind、国家统计局</div></div>
+    <div class="card"><h2>PPI</h2><div class="ch">单位：% · 线＝当月同比 · 柱＝环比 · 共用一个纵轴</div><div id="q_ppi" class="chart"></div><div class="src">资料来源：Wind、国家统计局</div></div>
     <div class="card full"><h2>CPI-PPI 剪刀差</h2><div class="ch">单位：% · 线＝CPI／PPI当月同比 · 柱＝CPI同比－PPI同比（pct）</div><div id="q_gap" class="chart" style="height:380px"></div><div class="src">资料来源：Wind、国家统计局，华泰研究测算</div></div>
   </div>
 </section>
@@ -423,15 +423,12 @@ function renderMacro(){
           +'<span style="color:#8b98a8">▮</span> '+name+'环比：<b>'+pct(momArr[i])+'</b>';
       }},
       legend:{top:0,right:0,textStyle:{color:'#5d7aa6'},inactiveColor:'#b9c9e2',data:[name+'当月同比',name+'环比']},
-      grid:{left:56,right:52,top:36,bottom:54},
+      grid:{left:56,right:18,top:36,bottom:54},
       xAxis:{type:'category',data:M,axisLine:axL,axisLabel:{...axT,hideOverlap:true,showMaxLabel:true}},
-      yAxis:[
-        {type:'value',name:'同比%',scale:true,splitLine:splL,axisLabel:{...axT,formatter:'{value}%'},nameTextStyle:{color:'#5d7aa6',align:'right'}},
-        {type:'value',name:'环比%',scale:true,splitLine:{show:false},axisLabel:{...axT,formatter:'{value}%'},nameTextStyle:{color:'#5d7aa6',align:'left'}}
-      ],
+      yAxis:{type:'value',name:'%',scale:true,splitLine:splL,axisLabel:{...axT,formatter:'{value}%'},nameTextStyle:{color:'#5d7aa6',align:'right'}},
       dataZoom:[{type:'inside'},{...dzBase}],
       series:[
-        {name:name+'环比',type:'bar',yAxisIndex:1,barMaxWidth:14,data:momArr,itemStyle:{color:barCol}},
+        {name:name+'环比',type:'bar',barMaxWidth:14,data:momArr,itemStyle:{color:barCol}},
         {name:name+'当月同比',type:'line',smooth:true,showSymbol:false,connectNulls:false,data:yoyArr,lineStyle:{width:2.4,color:color},itemStyle:{color:color},
          markLine:{silent:true,symbol:'none',lineStyle:{color:'#b9c9e2',type:'dashed'},label:{show:false},data:[{yAxis:0}]}}
       ]
