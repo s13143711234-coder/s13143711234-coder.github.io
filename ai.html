@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>【华泰电新】AI产业链价格跟踪</title>
+<title>【华泰电新】AI产业链跟踪</title>
 <script src="echarts.min.js"></script>
 <style>
   :root{
@@ -13,7 +13,7 @@
   *{box-sizing:border-box;margin:0;padding:0}
   body{background:linear-gradient(180deg,#dbeafe 0%,#eaf3fd 45%,#e3effb 100%) fixed;color:var(--txt);font-family:"Microsoft YaHei","PingFang SC",-apple-system,Segoe UI,sans-serif;padding:24px 28px 60px}
   h1{font-size:24px;font-weight:700;letter-spacing:.5px}
-  .tabs{display:flex;gap:10px;margin:16px 0 4px}
+  .tabs{display:flex;gap:10px;margin:16px 0 4px;flex-wrap:wrap}
   .tab{font-size:15px;font-weight:600;color:var(--sub);background:#ffffff;border:1px solid var(--line);
     border-radius:10px;padding:9px 20px;cursor:pointer;transition:.15s;box-shadow:0 2px 8px rgba(31,111,235,.06)}
   .tab:hover{color:var(--txt)}
@@ -38,13 +38,6 @@
   .card .src{color:var(--sub);font-size:11.5px;margin:4px 2px 6px;text-align:right;opacity:.85}
   .chart{width:100%;height:340px}
   .full{grid-column:1/-1}
-  .tablewrap{max-height:460px;overflow:auto;border-radius:10px;border:1px solid var(--line)}
-  table{border-collapse:collapse;width:100%;font-size:12.5px;white-space:nowrap}
-  thead th{position:sticky;top:0;background:var(--panel2);color:var(--txt);font-weight:600;padding:9px 11px;text-align:right;border-bottom:2px solid var(--line)}
-  thead th:first-child{text-align:left}
-  tbody td{padding:6px 11px;text-align:right;border-bottom:1px solid #eef4fc;font-variant-numeric:tabular-nums}
-  tbody td:first-child{text-align:left;color:var(--sub);font-weight:600}
-  tbody tr:hover{background:#f0f6ff}tbody tr:nth-child(even){background:#fafcff}
   footer{color:var(--sub);font-size:12px;margin-top:30px;line-height:1.8}
   @media(max-width:560px){body{padding:16px}.grid{grid-template-columns:1fr}.chart{height:300px}}
   /* 更新日志 */
@@ -63,11 +56,15 @@
 <div id="cl-overlay" onclick="closeCL()"></div>
 <div id="cl-box">
   <h3>📋 更新日志</h3>
+  <div class="cl-item"><span class="cl-date">8月4日</span>新增面板3宏观数据跟踪：制造业PMI、CPI、PPI（同比＋环比），含CPI-PPI剪刀差</div>
+  <div class="cl-item"><span class="cl-date">8月4日</span>新增面板2发电结构跟踪：分能源发电量、发电结构占比、全社会用电量及当月/累计同比（2021-01起）</div>
   <div class="cl-item"><span class="cl-date">8月4日</span>面板1上线：NAND Flash / DRAM 现货价（Wind·DRAMeXchange），含分品类走势、归一化价格指数及KPI</div>
 </div>
-<h1>【华泰电新】AI产业链价格跟踪</h1>
+<h1>【华泰电新】AI产业链跟踪</h1>
 <div class="tabs">
   <button class="tab active" data-tab="mem">① 存储价格跟踪</button>
+  <button class="tab" data-tab="power">② 发电结构跟踪</button>
+  <button class="tab" data-tab="macro">③ 宏观数据跟踪</button>
 </div>
 
 <!-- ============ TAB 1: 存储价格 ============ -->
@@ -91,8 +88,57 @@
   </div>
 </section>
 
+<!-- ============ TAB 2: 发电结构 ============ -->
+<section id="tab-power" class="tabpane">
+  <div class="meta">
+    数据区间：<b id="prange"></b>&nbsp;·&nbsp;频率：月度&nbsp;·&nbsp;资料来源：Wind（国家统计局、国家能源局）<br>
+    发电量为<b>规模以上电厂当月值</b>，单位 <b>亿千瓦时</b>，分火电／水电／核电／风电／太阳能五类，五类加总＝总发电量。全社会用电量原始单位为万千瓦时，本页已折算为 <b>亿千瓦时</b>。<br>
+    <b>注：</b>统计局不单独发布 1 月、2 月分月发电量（仅发布 1-2 月累计），故发电量各图 1-2 月为断点；全社会用电量个别年份 1 月亦缺失，均按缺失处理、不做插值。同比／累计同比为 Wind 原始口径，分品种同比为按当月值测算。<br>
+    若有任何使用意见或修改建议，欢迎联系邵梓洋 13143711234
+  </div>
+  <div class="kpis" id="pkpis"></div>
+
+  <div class="sec green">发电量结构</div>
+  <div class="grid">
+    <div class="card full"><h2>分能源类型月度发电量</h2><div class="ch">单位：亿千瓦时 · 火电／水电／核电／风电／太阳能 堆叠 · 右轴＝总发电量当月同比%</div><div id="p_mix" class="chart" style="height:400px"></div><div class="src">资料来源：Wind、国家统计局</div></div>
+    <div class="card full"><h2>发电结构占比</h2><div class="ch">单位：% · 各能源占当月总发电量比重 · 悬停看各项占比与非火电合计</div><div id="p_share" class="chart" style="height:360px"></div><div class="src">资料来源：Wind、国家统计局</div></div>
+  </div>
+
+  <div class="sec">全社会用电量</div>
+  <div class="grid">
+    <div class="card full"><h2>全社会用电量及同比</h2><div class="ch">柱＝当月用电量（亿千瓦时，左轴）· 线＝当月同比／累计同比（%，右轴）</div><div id="p_use" class="chart" style="height:400px"></div><div class="src">资料来源：Wind、国家能源局</div></div>
+  </div>
+
+  <div class="sec gold">分品种增速</div>
+  <div class="grid">
+    <div class="card full"><h2>分能源类型发电量当月同比</h2><div class="ch">单位：% · 按当月值同比测算（1-2月无数据故断点）· 悬停看各项</div><div id="p_yoy" class="chart" style="height:380px"></div><div class="src">资料来源：Wind、国家统计局，华泰研究测算</div></div>
+  </div>
+</section>
+
+<!-- ============ TAB 3: 宏观数据 ============ -->
+<section id="tab-macro" class="tabpane">
+  <div class="meta">
+    数据区间：<b id="qrange"></b>&nbsp;·&nbsp;频率：月度&nbsp;·&nbsp;资料来源：Wind（国家统计局、中国物流与采购联合会）<br>
+    制造业PMI 以 <b>50</b> 为荣枯线（图中红色虚线）。CPI／PPI 同时展示 <b>当月同比</b>（线）与 <b>环比</b>（柱），单位均为 %。最新月若指标尚未发布则不作图。<br>
+    若有任何使用意见或修改建议，欢迎联系邵梓洋 13143711234
+  </div>
+  <div class="kpis" id="qkpis"></div>
+
+  <div class="sec">制造业PMI</div>
+  <div class="grid">
+    <div class="card full"><h2>中国制造业PMI</h2><div class="ch">单位：% · 月度 · 50为荣枯线</div><div id="q_pmi" class="chart" style="height:380px"></div><div class="src">资料来源：Wind、国家统计局</div></div>
+  </div>
+
+  <div class="sec gold">物价</div>
+  <div class="grid">
+    <div class="card"><h2>CPI</h2><div class="ch">线＝当月同比（左轴%）· 柱＝环比（右轴%）</div><div id="q_cpi" class="chart"></div><div class="src">资料来源：Wind、国家统计局</div></div>
+    <div class="card"><h2>PPI</h2><div class="ch">线＝当月同比（左轴%）· 柱＝环比（右轴%）</div><div id="q_ppi" class="chart"></div><div class="src">资料来源：Wind、国家统计局</div></div>
+    <div class="card full"><h2>CPI-PPI 剪刀差</h2><div class="ch">单位：% · 线＝CPI／PPI当月同比 · 柱＝CPI同比－PPI同比（pct）</div><div id="q_gap" class="chart" style="height:380px"></div><div class="src">资料来源：Wind、国家统计局，华泰研究测算</div></div>
+  </div>
+</section>
+
 <footer>
-  数据来源：Wind（DRAMeXchange 现货平均价）。本页仅为内部跟踪用途，不构成投资建议。
+  数据来源：Wind（DRAMeXchange、国家统计局、国家能源局、中国物流与采购联合会）。本页仅为内部跟踪用途，不构成投资建议。
 </footer>
 
 <script>
@@ -104,13 +150,33 @@ const DRAM={dates:["2023-03-03","2023-03-06","2023-03-07","2023-03-08","2023-03-
   ddr4:[1.73,1.72,1.71,1.71,1.71,1.7,1.7,1.69,1.69,1.69,1.68,1.67,1.66,1.65,1.64,1.64,1.63,1.63,1.63,1.61,1.6,1.59,1.58,1.58,1.58,1.58,1.57,1.57,1.57,1.57,1.57,1.57,1.56,1.56,1.56,1.56,1.56,1.56,1.56,1.56,1.56,1.557,1.556,1.556,1.554,1.552,1.547,1.542,1.538,1.538,1.534,1.534,1.533,1.533,1.53,1.528,1.528,1.522,1.518,1.516,1.512,1.508,1.508,1.506,1.506,1.504,1.501,1.499,1.498,1.498,1.498,1.497,1.497,1.495,1.493,1.493,1.491,1.491,1.487,1.487,1.487,1.487,1.485,1.485,1.485,1.485,1.484,1.483,1.481,1.481,1.481,1.481,1.479,1.479,1.477,1.476,1.476,1.475,1.475,1.474,1.472,1.472,1.471,1.47,1.469,1.467,1.466,1.466,1.466,1.464,1.463,1.463,1.462,1.461,1.461,1.461,1.461,1.461,1.46,1.46,1.458,1.457,1.457,1.455,1.453,1.45,1.448,1.447,1.446,1.445,1.445,1.444,1.441,1.437,1.443,1.481,1.484,1.495,1.495,1.502,1.502,1.498,1.505,1.502,1.502,1.502,1.502,1.502,1.502,1.502,1.505,1.505,1.513,1.52,1.52,1.527,1.537,1.537,1.534,1.534,1.542,1.549,1.562,1.57,1.572,1.582,1.589,1.593,1.604,1.613,1.613,1.613,1.613,1.613,1.621,1.622,1.618,1.617,1.613,1.609,1.607,1.599,1.59,1.588,1.585,1.581,1.584,1.594,1.587,1.585,1.595,1.611,1.621,1.629,1.629,1.635,1.629,1.629,1.633,1.631,1.631,1.633,1.631,1.626,1.626,1.625,1.628,1.628,1.639,1.639,1.653,1.662,1.678,1.692,1.695,1.703,1.703,1.711,1.711,1.711,1.717,1.726,1.738,1.757,1.773,1.787,1.787,1.787,1.793,1.797,1.797,1.801,1.801,1.808,1.808,1.808,1.808,1.811,1.811,1.811,1.811,1.811,1.827,1.83,1.83,1.84,1.84,1.833,1.833,1.832,1.827,1.817,1.81,1.807,1.803,1.8,1.8,1.798,1.797,1.795,1.792,1.79,1.783,1.777,1.77,1.767,1.763,1.758,1.755,1.753,1.753,1.753,1.752,1.752,1.752,1.76,1.76,1.767,1.767,1.77,1.77,1.773,1.772,1.772,1.77,1.769,1.769,1.764,1.763,1.761,1.761,1.76,1.759,1.758,1.757,1.756,1.756,1.754,1.75,1.748,1.746,1.745,1.741,1.737,1.735,1.735,1.733,1.733,1.733,1.733,1.733,1.733,1.733,1.733,1.729,1.729,1.723,1.717,1.711,1.702,1.696,1.69,1.687,1.687,1.687,1.683,1.679,1.679,1.679,1.691,1.691,1.685,1.692,1.704,1.722,1.728,1.735,1.738,1.746,1.746,1.746,1.746,1.746,1.743,1.743,1.74,1.74,1.74,1.74,1.742,1.742,1.748,1.748,1.748,1.745,1.741,1.739,1.743,1.743,1.739,1.739,1.739,1.738,1.738,1.738,1.738,1.738,1.738,1.734,1.728,1.727,1.726,1.72,1.72,1.72,1.718,1.717,1.715,1.715,1.708,1.698,1.695,1.694,1.692,1.686,1.683,1.682,1.679,1.678,1.678,1.678,1.675,1.675,1.672,1.669,1.669,1.666,1.666,1.666,1.664,1.661,1.661,1.661,1.661,1.661,1.66,1.652,1.652,1.652,1.652,1.652,1.652,1.652,1.652,1.652,1.652,1.645,1.645,1.649,1.649,1.649,1.649,1.649,1.643,1.639,1.635,1.635,1.639,1.639,1.639,1.642,1.642,1.64,1.633,1.63,1.63,1.625,1.623,1.618,1.611,1.6,1.591,1.588,1.579,1.565,1.563,1.558,1.557,1.555,1.555,1.552,1.552,1.551,1.551,1.551,1.551,1.551,1.551,1.551,1.551,1.549,1.549,1.559,1.568,1.568,1.577,1.577,1.577,1.575,1.584,1.584,1.583,1.583,1.583,1.583,1.589,1.588,1.587,1.587,1.587,1.587,1.585,1.585,1.585,1.585,1.585,1.585,1.585,1.595,1.59,1.58,1.58,1.575,1.57,1.565,1.565,1.566,1.566,1.566,1.569,1.571,1.579,1.594,1.601,1.603,1.613,1.623,1.631,1.633,1.636,1.636,1.645,1.648,1.667,1.695,1.725,1.738,1.756,1.781,1.813,1.83,1.837,1.841,1.844,1.846,1.849,1.846,1.845,1.845,1.852,1.856,1.859,1.861,1.877,1.887,1.901,1.916,1.922,1.933,1.949,1.962,2.004,2.027,2.049,2.062,2.094,2.15,2.194,2.25,2.281,2.327,2.326,2.333,2.332,2.328,2.353,2.373,2.373,2.383,2.394,2.421,2.486,2.575,2.601,2.652,2.722,2.824,2.935,3.03,3.18,3.3,3.442,3.541,3.824,4.083,4.441,4.852,5.229,5.575,5.682,5.682,5.709,5.736,5.736,6.073,6.073,6.045,6.045,6.04,6.03,6.024,6.023,6.016,6.024,6.092,6.149,6.151,6.158,6.291,6.364,6.364,6.345,6.334,6.291,6.291,6.291,6.28,6.237,6.156,6.129,6.115,6.101,6.07,6.059,6.032,6.005,5.996,5.993,5.988,5.966,5.959,5.912,5.874,5.874,5.873,5.861,5.861,5.857,5.881,5.858,5.836,5.851,5.846,5.846,5.876,5.919,5.964,6.134,6.185,6.246,6.336,6.426,6.504,6.623,6.688,6.797,6.86,6.887,7.052,7.181,7.195,7.257,7.328,7.407,7.45,7.513,7.625,7.663,7.725,7.775,7.95,8.075,8.25,8.35,8.35,8.363,8.375,8.425,8.638,8.725,8.8,8.95,9.15,9.225,9.4,9.525,9.7,9.775,9.9,10.225,10.475,10.6,10.73,10.9,11.03,11.15,11.23,11.35,11.78,12,12.28,12.53,12.88,13.15,13.33,13.58,13.83,13.83,13.83,13.88,13.88,13.9,14.13,14.38,14.38,14.63,15,15.38,15.9,16.35,16.75,17.2,17.65,17.95,18.3,18.79,19.15,19.6,20.1,20.65,21.39,21.84,22.18,22.89,23.44,24,24.51,25.22,25.78,26.33,26.67,27,27.33,27.56,27.56,27.56,27.33,27.29,27.22,27.2,27.16,27.07,27.04,27,27,27.25,27.25,27.25,27.375,27.75,27.875,27.875,27.75,27.7,27.625,27.55,27.675,27.65,27.625,27.6,27.45,27.375,27.3,27.25,27.125,26.875,26.75,26.5,26.375,26.25,26.15,26.125,26.1,26,25.875,25.75,25.725,25.625,25.575,25.45,25.375,25.25,25,24.775,24.55,24.3,24.225,24.225,23.75,23.475,23.225,23.05,22.8,22.75,22.75,22.7,22.575,22.625,23.5,23.875,23.875,25.125,25.375,25.625,26.25,27,27.625,28.125,28.25,28.675,29.425,29.875,30.25,30.5,31.1,31.65,32,32.425,32.875,33.5,34,34.5,35.088,35.8,36.425,36.8,37.25,37.732,38,38.5,39,39.375,39.55,40,40.375,41,41.75,42.5,43,43.375,44,44.125,44.25,44.7,45.075,45.2,45.5,45.75,45.5,45.375,45.4,45.65,45.65,45.325,45.075,44.95,44.875,44.825,44.925,44.925,44.925],
   ddr5:[4.37,4.32,4.31,4.3,4.26,4.23,4.2,4.2,4.19,4.19,4.16,4.15,4.14,4.13,4.12,4.11,4.11,4.07,4.04,3.99,3.96,3.96,3.95,3.92,3.92,3.92,3.92,3.92,3.92,3.92,3.92,3.92,3.92,3.92,3.92,3.93,3.93,3.93,3.95,3.95,3.96,3.96,4,4.04,4.06,4.09,4.11,4.14,4.18,4.21,4.24,4.26,4.25,4.25,4.24,4.24,4.23,4.21,4.21,4.2,4.2,4.19,4.19,4.19,4.19,4.17,4.17,4.16,4.16,4.15,4.15,4.15,4.15,4.15,4.14,4.14,4.14,4.14,4.14,4.14,4.14,4.13,4.13,4.12,4.11,4.1,4.1,4.09,4.07,4.05,4.05,4.05,4.05,4.05,4.04,4.04,4.04,4.04,4.04,4.04,4.04,4.04,4.04,4.05,4.05,4.05,4.06,4.06,4.05,4.05,4.05,3.99,3.96,3.93,3.91,3.9,3.88,3.88,3.9,3.91,3.91,3.91,3.95,3.96,3.95,3.96,3.96,3.97,3.97,3.98,3.98,3.99,3.99,4.02,4.03,4.04,4.05,4.08,4.08,4.1,4.1,4.12,4.13,4.13,4.13,4.13,null,4.12,4.13,4.14,4.16,4.16,4.17,4.17,4.17,4.17,4.16,4.15,4.15,4.15,4.14,4.14,4.14,4.14,4.14,4.14,4.14,4.15,4.15,4.15,4.14,4.13,4.13,4.13,4.12,4.12,4.12,4.12,4.13,4.14,4.15,4.15,4.15,4.16,4.17,4.18,4.2,4.2,4.21,4.22,4.22,4.22,4.23,4.23,4.23,4.24,4.24,4.24,4.24,4.24,4.23,4.23,4.22,4.22,4.22,4.23,4.23,4.23,4.24,4.24,4.25,4.25,4.25,4.25,4.26,4.28,4.28,4.29,4.29,4.29,4.29,4.31,4.36,4.4,4.43,4.45,4.47,4.49,4.52,4.53,4.55,4.57,4.6,4.61,4.62,4.63,4.64,4.64,4.65,4.66,4.66,4.67,4.69,4.71,4.71,4.72,4.72,4.72,4.71,4.71,4.71,4.71,4.713,4.71,4.71,4.71,4.707,4.707,4.703,4.703,4.703,4.703,4.697,4.693,4.693,4.693,4.693,4.693,4.692,4.692,4.692,4.692,4.69,4.698,4.705,4.712,4.723,4.743,4.743,4.743,4.743,4.743,4.767,4.79,4.823,4.85,4.85,4.883,4.883,4.893,4.893,4.903,4.903,4.917,4.917,4.927,4.927,4.927,4.933,4.927,4.923,4.917,4.9,4.883,4.867,4.863,4.853,4.85,4.85,4.847,4.847,4.847,4.84,4.84,4.84,4.84,4.84,4.84,4.84,4.84,4.833,4.833,4.833,4.833,4.827,4.827,4.85,4.85,4.867,4.877,4.877,4.877,4.877,4.883,4.893,4.917,4.917,4.917,4.94,4.947,4.967,4.97,4.977,4.99,4.99,5.01,5.037,5.05,5.06,5.067,5.083,5.1,5.103,5.12,5.14,5.143,5.15,5.153,5.167,5.167,5.167,5.167,5.17,5.167,5.15,5.147,5.143,5.143,5.14,5.14,5.137,5.137,5.13,5.127,5.12,5.109,5.109,5.099,5.095,5.088,5.064,5.058,5.054,5.044,4.985,4.951,4.937,4.933,4.93,4.927,4.927,4.973,4.985,4.985,4.978,4.967,4.967,4.954,4.952,4.952,4.95,4.949,4.948,4.948,4.948,4.912,4.894,4.894,4.894,4.877,4.877,4.859,4.841,4.806,4.804,4.78,4.769,4.758,4.751,4.746,4.775,4.79,4.79,4.793,4.804,4.804,4.804,4.801,4.797,4.797,4.797,4.794,4.794,4.794,4.79,4.783,4.779,4.776,4.769,4.757,4.757,4.757,4.757,4.757,4.757,4.754,4.75,4.743,4.739,4.736,4.732,4.729,4.711,4.707,4.696,4.696,4.693,4.689,4.686,4.686,4.686,4.686,4.686,4.682,4.682,4.68,4.679,4.679,4.679,4.679,4.679,4.679,4.684,4.684,4.671,4.666,4.663,4.661,4.695,4.695,4.689,4.696,4.696,4.696,4.707,4.707,4.707,4.725,4.75,4.761,4.773,4.781,4.787,4.787,4.797,4.809,4.822,4.831,4.837,4.889,4.9,4.929,4.931,4.943,4.957,5,5.025,5.038,5.053,5.068,5.078,5.088,5.113,5.113,5.138,5.163,5.188,5.213,5.238,5.288,5.3,5.32,5.334,5.342,5.343,5.343,5.343,5.304,5.304,5.312,5.316,5.33,5.34,5.36,5.4,5.44,5.48,5.52,5.544,5.54,5.526,5.526,5.524,5.524,5.524,5.524,5.524,5.524,5.524,5.522,5.522,5.507,5.499,5.491,5.489,5.489,5.489,5.489,5.489,5.511,5.511,5.548,5.561,5.561,5.561,5.561,5.574,5.624,5.643,5.711,5.782,5.782,5.782,5.854,5.901,5.901,5.901,5.947,6.014,6.014,6.053,6.053,6.047,6.062,6.078,6.078,6.095,6.095,6.095,6.095,6.079,6.072,6.066,6.066,6.066,6.063,6.063,6.109,6.109,6.186,6.202,6.202,6.168,6.1,6.097,6.097,6.117,6.14,6.167,6.167,6.16,6.16,6.16,6.193,6.2,6.183,6.183,6.167,6.167,6.167,6.143,6.117,6.083,6.047,6.033,5.987,6,6.017,6.017,6.02,6.05,6.05,6.05,6.05,6.05,6.05,6.067,6.133,6.2,6.216,6.263,6.516,6.727,6.844,6.927,7.009,7.19,7.411,7.475,7.535,7.676,7.878,8.022,8.129,8.242,8.328,8.473,8.577,8.867,9,9.367,9.786,10.343,10.457,10.743,11.267,11.867,12.615,13.3,14,14.654,15.215,15.488,15.563,16.125,17.319,19.156,20.938,22.1,23.038,23.819,24.131,24.505,24.767,24.833,24.833,25,25.1,25.767,26.167,26.833,27.167,27.167,27.2,27.2,27.2,26.933,26.333,26.333,26.333,26.267,26,26.167,26.267,26.333,26.367,26.4,26.433,26.733,26.767,27.333,27.5,27.833,28.226,28.581,29.131,29.803,30.544,31.074,31.475,31.656,31.781,32.5,33.406,34.075,34.5,35,35.333,36.333,36.667,36.667,36.667,36.667,36.6,36.6,36.533,37.167,38.167,38,37.967,37.933,38,37.833,38,38.033,38.033,38.067,38.1,38.167,38.667,39.333,39.5,39.333,39.167,39.2,39.5,39.667,39.683,39.683,39.567,39.167,39.333,39.5,39.667,39.833,39.833,39.167,38.667,38.167,38.167,37.82,37.458,37.458,37.426,37.067,37,37,37,37,37.027,37.033,37.1,37.2,37.433,37.7,38.5,38.667,38.833,38.833,38.667,38.5,38.433,38.5,38.867,39,38.833,38.833,38.833,39,39.833,39.833,40.267,40.367,40.7,41.167,41.267,41.1,41.167,41.333,41.5,41.667,41.667,41.667,41.833,41.9,42.267,42.567,42.833,43.233,43.4,43.567,44,44.5,44.667,44.833,45,45.233,45.4,46,46.167,46.5,46.667,46.733,46.733,46.733,46.833,46.833,46.633,46.667,47,47.067,47.067,47.767,47.8,48.333,48.5,48.9,49.333,49.667,49.767,50.067,50.333,50.5,50.833,50.833,50.933,50.933,50.967,50.967,51.333,51.333]};
 
+// ===== power generation + macro (Wind / NBS / NEA) =====
+const POWER={months:["2021-01","2021-02","2021-03","2021-04","2021-05","2021-06","2021-07","2021-08","2021-09","2021-10","2021-11","2021-12","2022-01","2022-02","2022-03","2022-04","2022-05","2022-06","2022-07","2022-08","2022-09","2022-10","2022-11","2022-12","2023-01","2023-02","2023-03","2023-04","2023-05","2023-06","2023-07","2023-08","2023-09","2023-10","2023-11","2023-12","2024-01","2024-02","2024-03","2024-04","2024-05","2024-06","2024-07","2024-08","2024-09","2024-10","2024-11","2024-12","2025-01","2025-02","2025-03","2025-04","2025-05","2025-06","2025-07","2025-08","2025-09","2025-10","2025-11","2025-12","2026-01","2026-02","2026-03","2026-04","2026-05","2026-06","2026-07"],
+  solar:[null,null,141,143.6,165.6,161,162.2,158.9,148.3,135.9,141.9,141.8,null,null,186.5,205.5,206.7,205.6,210.8,206.4,201.8,190,157.5,161.6,null,null,242.9,230.9,240.6,259.3,258.9,269.2,246.1,244.3,234.6,210.5,null,null,311.1,314,358.7,352.3,359.7,386.1,323.4,323,298.3,315.4,null,null,417.7,447.5,470.8,500.6,559.3,538.2,464.8,393.7,412.2,421.6,null,null,546.5,570.6,624.2,678.7,null],
+  wind:[null,null,473.4,469.5,506.6,385.9,379.7,322.1,340.3,464.9,516.2,571.2,null,null,672.6,627.8,594.6,524.3,456.4,462.6,476.1,613.3,602,723,null,null,734.8,829.3,743.6,557.5,613.7,440.6,497.7,563.1,803.9,814.2,null,null,905,807.6,771.5,668.6,660.9,502.4,694.3,799.9,823.6,920.9,null,null,1053.9,974.5,916.7,738.1,744.3,645,671.9,732.7,1045.5,1041.4,null,null,911.8,974.1,968.6,733,null],
+  nuclear:[null,null,342.1,323.7,342.5,358.8,382.2,365.3,332.4,335.3,336.2,372.8,null,null,349.8,326.7,346.9,326.6,369.7,363.2,323.5,360.1,373.6,397.3,null,null,365.7,345.2,368.9,371.6,380.4,383.3,345.3,359.4,364.6,380.6,null,null,348.1,365.7,360.1,356.5,396.7,402.1,355.1,367.3,375.8,423.9,null,null,428.2,411.1,384.3,393.6,430,426.4,361.7,386.7,398.1,446.1,null,null,377.5,375.3,403.5,427.2,null],
+  hydro:[null,null,669.6,776.1,955.9,1141.6,1422.2,1370.2,1408.8,1193.7,901,715.1,null,null,805.2,917.9,1217,1481.2,1462.6,1226.5,989.9,993.5,779.5,747.1,null,null,683.5,683.6,820.2,982.1,1211.3,1466.2,1393.8,1222.5,829.9,775,null,null,712,834.8,1149.9,1437.6,1664.5,1634.7,1199.3,1049.2,822.7,827.2,null,null,781.3,786.2,991.1,1391,1513.5,1478.7,1588.9,1351.3,966.8,865.2,null,null,862.1,881.2,1119.9,1457.1,null],
+  thermal:[null,null,4952.9,4517.1,4507.3,4813.2,5239.7,5166.9,4521.4,4263.7,4645,5432.8,null,null,4687.7,4007.7,4045.1,4552.6,5559.6,5989.3,4838.7,4453.1,4754.1,5549.5,null,null,5145.9,4494.4,4712.5,5228.5,5997.4,5890.5,4973,4654.1,5076.7,6109.1,null,null,5200.7,4578.7,4538.4,4870.1,5749.2,6148.8,5451.4,4770.6,5174.7,5975,null,null,5098.7,4491.5,4614.6,4939.4,6020.1,6274.4,5174.6,5137.7,4969.5,5811.7,null,null,5326.6,4638.5,4726.3,4979.5,null],
+  total:[null,null,6579,6230.1,6478.4,6860.5,7586.2,7383.5,6751.2,6393.5,6540.4,7233.7,null,null,6701.7,6085.7,6410.2,7090.3,8059.2,8248,6830,6610,6666.7,7578.5,null,null,7172.9,6583.5,6885.8,7399,8461.7,8449.9,7456.1,7043.5,7309.7,8289.8,null,null,7476.9,6900.8,7178.5,7685.2,8831.1,9074.2,8023.6,7310,7495.1,8462.4,null,null,7780.2,7111.1,7377.6,7962.9,9267.2,9362.7,8261.8,8002.1,7792.2,8586.2,null,null,8024.8,7439.8,7842.5,8275.6,null],
+  use:[7324.6,5263.8,6631.1,6361.5,6724.1,7033.4,7758,7607.3,6946.9,6603.1,6718,8155.7,7231.8,6235,6944.1,6362,6715.6,7451.3,8323.9,8520.4,7092.3,6834.1,6827.8,7784.5,6884,6950,7368.7,6900.5,7221.9,7750.9,8887.8,8861.1,7810.6,7419.3,7630.4,8563,null,6845.3,7942.3,7412.3,7750.9,8205,9395.8,9649,8475,7742.4,7848.7,8835.2,8130,7434,8282.4,7721,8096,8670.4,10225.6,10154.3,8886.3,8571.6,8355.5,9080,null,8595,8594.8,8205.2,8671.3,8981.5,null],
+  useYoY:[26.16,18.53,20.73,14.17,13.47,10.75,13.68,4.3,7.63,6.11,3.1,-2.18,-1.27,16.94,3.5,-1.3,-1.3,4.7,6.3,10.7,0.89,2.24,0.43,-4.55,-4.8,11,5.92,8.33,7.4,3.87,6.46,3.89,9.89,8.39,11.6,10,null,null,7.36,6.96,7.22,5.83,5.69,8.87,8.52,4.33,2.79,3.18,null,8.6,4.8,4.68,4.43,5.42,8.58,4.99,4.54,10.36,6.17,2.77,null,15.62,3.52,5.99,6.89,3.69,null],
+  useYtd:[null,22.24,21.24,19.12,17.69,16.21,15.61,13.8,12.9,12.23,11.4,10.3,null,5.79,5,3.4,2.5,2.9,3.4,4.4,4,3.8,3.5,3.6,-4.8,2.3,3.6,4.7,5.2,5,5.2,5,5.6,5.8,6.3,6.7,null,11,9.8,9,8.6,8.1,7.7,7.9,7.9,7.6,7.1,6.8,null,1.3,2.5,3.1,3.4,3.7,4.5,4.6,4.6,5.1,5.2,5,null,6.1,5.2,5.4,5.7,5.3,null]};
+const MACRO={months:["2021-01","2021-02","2021-03","2021-04","2021-05","2021-06","2021-07","2021-08","2021-09","2021-10","2021-11","2021-12","2022-01","2022-02","2022-03","2022-04","2022-05","2022-06","2022-07","2022-08","2022-09","2022-10","2022-11","2022-12","2023-01","2023-02","2023-03","2023-04","2023-05","2023-06","2023-07","2023-08","2023-09","2023-10","2023-11","2023-12","2024-01","2024-02","2024-03","2024-04","2024-05","2024-06","2024-07","2024-08","2024-09","2024-10","2024-11","2024-12","2025-01","2025-02","2025-03","2025-04","2025-05","2025-06","2025-07","2025-08","2025-09","2025-10","2025-11","2025-12","2026-01","2026-02","2026-03","2026-04","2026-05","2026-06","2026-07"],
+  pmi:[51.3,50.6,51.9,51.1,51,50.9,50.4,50.1,49.6,49.2,50.1,50.3,50.1,50.2,49.5,47.4,49.6,50.2,49,49.4,50.1,49.2,48,47,50.1,52.6,51.9,49.2,48.8,49,49.3,49.7,50.2,49.5,49.4,49,49.2,49.1,50.8,50.4,49.5,49.5,49.4,49.1,49.8,50.1,50.3,50.1,49.1,50.2,50.5,49,49.5,49.7,49.3,49.4,49.8,49,49.2,50.1,49.3,49,50.4,50.3,50,50.3,49.2],
+  ppiYoY:[0.3,1.7,4.4,6.8,9,8.8,9,9.5,10.7,13.5,12.9,10.3,9.1,8.8,8.3,8,6.4,6.1,4.2,2.3,0.9,-1.3,-1.3,-0.7,-0.8,-1.4,-2.5,-3.6,-4.6,-5.4,-4.4,-3,-2.5,-2.6,-3,-2.7,-2.5,-2.7,-2.8,-2.5,-1.4,-0.8,-0.8,-1.8,-2.8,-2.9,-2.5,-2.3,-2.3,-2.2,-2.5,-2.7,-3.3,-3.6,-3.6,-2.9,-2.3,-2.1,-2.2,-1.9,-1.4,-0.9,0.5,2.8,3.9,4.1,null],
+  ppiMoM:[1,0.8,1.6,0.9,1.6,0.3,0.5,0.7,1.2,2.5,0,-1.2,-0.2,0.5,1.1,0.6,0.1,0,-1.3,-1.2,-0.1,0.2,0.1,-0.5,-0.4,0,0,-0.5,-0.9,-0.8,-0.2,0.2,0.4,0,-0.3,-0.3,-0.2,-0.2,-0.1,-0.2,0.2,-0.2,-0.2,-0.7,-0.6,-0.1,0.1,-0.1,-0.2,-0.1,-0.4,-0.4,-0.4,-0.4,-0.2,0,0,0.1,0.1,0.2,0.4,0.4,1,1.7,0.5,-0.3,null],
+  cpiYoY:[-0.3,-0.2,0.4,0.9,1.3,1.1,1,0.8,0.7,1.5,2.3,1.5,0.9,0.9,1.5,2.1,2.1,2.5,2.7,2.5,2.8,2.1,1.6,1.8,2.1,1,0.7,0.1,0.2,0,-0.3,0.1,0,-0.2,-0.5,-0.3,-0.8,0.7,0.1,0.3,0.3,0.2,0.5,0.6,0.4,0.3,0.2,0.1,0.5,-0.7,-0.1,-0.1,-0.1,0.1,0,-0.4,-0.3,0.2,0.7,0.8,0.2,1.3,1,1.2,1.2,1,null],
+  cpiMoM:[1,0.6,-0.5,-0.3,-0.2,-0.4,0.3,0.1,0,0.7,0.4,-0.3,0.4,0.6,0,0.4,-0.2,0,0.5,-0.1,0.3,0.1,-0.2,0,0.8,-0.5,-0.3,-0.1,-0.2,-0.2,0.2,0.3,0.2,-0.1,-0.5,0.1,0.3,1,-1,0.1,-0.1,-0.2,0.5,0.4,0,-0.3,-0.6,0,0.7,-0.2,-0.4,0.1,-0.2,-0.1,0.4,0,0.1,0.2,-0.1,0.2,0.2,1,-0.7,0.3,-0.1,-0.3,null]};
+
 </script>
 <script>
-const memCharts=[];
+// ================= 公共 =================
+const memCharts=[], powerCharts=[], macroCharts=[];
 function mk(id,opt,bucket){const ch=echarts.init(document.getElementById(id));ch.setOption(opt);bucket.push(ch);return ch;}
-window.addEventListener('resize',()=>{memCharts.forEach(c=>c.resize());});
+window.addEventListener('resize',()=>{memCharts.concat(powerCharts).concat(macroCharts).forEach(c=>c.resize());});
 const baseTip={trigger:'axis',confine:true,backgroundColor:'#ffffff',borderColor:'#cfe0f5',textStyle:{color:'#16335f'}};
 const axL={lineStyle:{color:'#cfe0f5'}}, axT={color:'#5d7aa6'}, splL={lineStyle:{color:'#e3edf9'}};
+const dzBase={type:'slider',height:16,bottom:8,borderColor:'#cfe0f5',textStyle:{color:'#5d7aa6'},fillerColor:'rgba(31,111,235,.12)'};
 function chgSpan(p,label,suffix,bold){
   const su=suffix||'%';
   const w=s=>bold?`<b>${s}</b>`:s;
@@ -119,7 +185,15 @@ function chgSpan(p,label,suffix,bold){
   const cls=p>0?'up':'down', a=p>0?'▲':'▼';
   return `<span class="chg ${cls}">${w(a+' '+Math.abs(p).toFixed(1)+su)} <span style="color:#5d7aa6">${label}</span></span>`;
 }
+function flatSpan(v,label,dec){
+  if(v==null) return `<span style="color:#5d7aa6">— ${label}</span>`;
+  return `<span style="color:#16335f;font-weight:600">${(v>=0?'+':'')+(+v).toFixed(dec==null?1:dec)}%</span> <span style="color:#5d7aa6">${label}</span>`;
+}
+const lastNN=a=>{for(let i=a.length-1;i>=0;i--)if(a[i]!=null)return i;return -1;};
+const prevNN=(a,i)=>{for(let j=i-1;j>=0;j--)if(a[j]!=null)return j;return -1;};
+const yoy12=a=>a.map((v,i)=>(i<12||v==null||a[i-12]==null||!a[i-12])?null:+((v/a[i-12]-1)*100).toFixed(1));
 
+// ================= 面板1 存储价格 =================
 function renderMem(){
   const cpal=['#1f6feb','#1f9d55','#d29922','#f85149','#8957e5','#16a3a3'];
   const usdTip=v=>v==null?'-':(+v).toFixed(3)+' 美元';
@@ -135,11 +209,10 @@ function renderMem(){
       grid:{left:60,right:18,top:36,bottom:54},
       xAxis:{type:'category',data:dates,axisLine:axL,axisLabel:{...axT,hideOverlap:true,showMaxLabel:true}},
       yAxis:{type:'value',scale:true,splitLine:splL,axisLabel:axT},
-      dataZoom:[{type:'inside',startValue:sv},{type:'slider',height:16,bottom:8,borderColor:'#cfe0f5',textStyle:{color:'#5d7aa6'},fillerColor:'rgba(31,111,235,.12)',startValue:sv}],
+      dataZoom:[{type:'inside',startValue:sv},{...dzBase,startValue:sv}],
       series:defs.map((s,i)=>({name:s.name,type:'line',smooth:true,showSymbol:false,connectNulls:o.connectNulls===true,data:s.data,lineStyle:{width:2.2,color:s.color||cpal[i%cpal.length]}}))},memCharts);
   }
 
-  // —— 分品类走势 ——
   tlChart('c_nand',NAND.dates,[
     {name:'NAND Flash 64Gb(8Gx8) MLC',data:NAND.g64},
     {name:'NAND Flash 32Gb(4Gx8) MLC',data:NAND.g32}
@@ -149,7 +222,6 @@ function renderMem(){
     {name:'DDR5 16Gb(2Gx8) 4800/5600Mbps',data:DRAM.ddr5}
   ]);
 
-  // —— 归一化总览 ——
   const uni=[...new Set([...NAND.dates,...DRAM.dates])].sort();
   const align=(ds,arr)=>{const m=new Map();ds.forEach((d,i)=>m.set(d,arr[i]));return uni.map(d=>m.has(d)?m.get(d):null);};
   const ovKeys=[
@@ -168,9 +240,6 @@ function renderMem(){
   });
   tlChart('c_ov',uni,ovDefs,{tip:v=>v==null?'-':(+v).toFixed(1),connectNulls:true});
 
-  // —— KPI ——
-  function lastNN(a){for(let i=a.length-1;i>=0;i--)if(a[i]!=null)return i;return -1;}
-  function prevNN(a,i){for(let j=i-1;j>=0;j--)if(a[j]!=null)return j;return -1;}
   function kpi(title,dts,arr,momLabel){
     const i=lastNN(arr); if(i<0)return null;
     const cur=arr[i], pj=prevNN(arr,i);
@@ -193,11 +262,236 @@ function renderMem(){
      <div class="chg">${chgSpan(k.mom,k.momLabel).replace('class="chg ','class="')} <span style="color:#cfe0f5">|</span> ${k.yoy==null?'<span style="color:#5d7aa6">同比 —</span>':chgSpan(k.yoy,'同比').replace('class="chg ','class="')}</div></div>`).join('');
 }
 
+// ================= 面板2 发电结构 =================
+function renderPower(){
+  const P=POWER, M=P.months;
+  const items=[
+    {key:'thermal',name:'火电',color:'#8a93a3'},
+    {key:'hydro',  name:'水电',color:'#1f6feb'},
+    {key:'nuclear',name:'核电',color:'#8957e5'},
+    {key:'wind',   name:'风电',color:'#16a3a3'},
+    {key:'solar',  name:'太阳能',color:'#d29922'}
+  ];
+  document.getElementById('prange').textContent=M[0]+' ~ '+M[M.length-1];
+  const pct=v=>v==null?'-':(v>=0?'+':'')+(+v).toFixed(1)+'%';
+  const num=v=>v==null?'-':(+v).toLocaleString('zh-CN',{maximumFractionDigits:1});
+  const totYoY=yoy12(P.total);
+
+  // —— 图1：分能源发电量堆叠 + 总量同比 ——
+  mk('p_mix',{
+    tooltip:{...baseTip,formatter:ps=>{
+      const i=ps[0].dataIndex;
+      let s='<b>'+ps[0].axisValue+'</b><br>';
+      ps.filter(p=>p.seriesType==='bar').forEach(p=>{
+        const sh=(p.value!=null&&P.total[i])?' <span style="color:#8b98a8">'+(p.value/P.total[i]*100).toFixed(1)+'%</span>':'';
+        s+=p.marker+p.seriesName+'：'+num(p.value)+' 亿千瓦时'+sh+'<br>';
+      });
+      s+='<span style="color:#5d7aa6">合计</span>：<b>'+num(P.total[i])+'</b> 亿千瓦时<br>';
+      s+='<span style="color:#5d7aa6">总量当月同比</span>：<b style="color:'+((totYoY[i]||0)>=0?'#e5484d':'#1f9d55')+'">'+pct(totYoY[i])+'</b>';
+      return s;
+    }},
+    legend:{top:0,left:'center',textStyle:{color:'#5d7aa6'},inactiveColor:'#b9c9e2',data:items.map(it=>it.name).concat(['总发电量当月同比'])},
+    grid:{left:64,right:56,top:40,bottom:54},
+    xAxis:{type:'category',data:M,axisLine:axL,axisLabel:{...axT,hideOverlap:true,showMaxLabel:true}},
+    yAxis:[
+      {type:'value',name:'亿千瓦时',splitLine:splL,axisLabel:axT,nameTextStyle:{color:'#5d7aa6',align:'right'}},
+      {type:'value',name:'%',splitLine:{show:false},axisLabel:{...axT,formatter:'{value}%'},nameTextStyle:{color:'#5d7aa6',align:'left'}}
+    ],
+    dataZoom:[{type:'inside'},{...dzBase}],
+    series:items.map(it=>({name:it.name,type:'bar',stack:'g',barMaxWidth:22,data:P[it.key],itemStyle:{color:it.color}}))
+      .concat([{name:'总发电量当月同比',type:'line',yAxisIndex:1,smooth:true,symbol:'circle',symbolSize:4,connectNulls:false,data:totYoY,lineStyle:{width:2,color:'#f85149'},itemStyle:{color:'#f85149'}}])
+  },powerCharts);
+
+  // —— 图2：结构占比 ——
+  const shares=items.map(it=>({name:it.name,color:it.color,
+    data:P[it.key].map((v,i)=>(v==null||!P.total[i])?null:+(v/P.total[i]*100).toFixed(2))}));
+  mk('p_share',{
+    tooltip:{...baseTip,formatter:ps=>{
+      let s='<b>'+ps[0].axisValue+'</b><br>';
+      let clean=0, has=false;
+      ps.forEach(p=>{s+=p.marker+p.seriesName+'：'+(p.value==null?'-':(+p.value).toFixed(1)+'%')+'<br>';
+        if(p.seriesName!=='火电'&&p.value!=null){clean+=p.value;has=true;}});
+      if(has)s+='<span style="color:#5d7aa6">非火电合计</span>：<b>'+clean.toFixed(1)+'%</b>';
+      return s;
+    }},
+    legend:{top:0,left:'center',textStyle:{color:'#5d7aa6'},inactiveColor:'#b9c9e2',data:items.map(it=>it.name)},
+    grid:{left:56,right:18,top:40,bottom:54},
+    xAxis:{type:'category',data:M,axisLine:axL,axisLabel:{...axT,hideOverlap:true,showMaxLabel:true}},
+    yAxis:{type:'value',max:100,splitLine:splL,axisLabel:{...axT,formatter:'{value}%'}},
+    dataZoom:[{type:'inside'},{...dzBase}],
+    series:shares.map(s=>({name:s.name,type:'bar',stack:'s',barMaxWidth:22,data:s.data,itemStyle:{color:s.color}}))
+  },powerCharts);
+
+  // —— 图3：全社会用电量 + 当月/累计同比 ——
+  mk('p_use',{
+    tooltip:{...baseTip,formatter:ps=>{
+      const i=ps[0].dataIndex;
+      let s='<b>'+ps[0].axisValue+'</b><br>';
+      s+='<span style="color:#5d7aa6">全社会用电量</span>：<b>'+num(P.use[i])+'</b> 亿千瓦时<br>';
+      s+='<span style="color:#5d7aa6">当月同比</span>：<b style="color:'+((P.useYoY[i]||0)>=0?'#e5484d':'#1f9d55')+'">'+pct(P.useYoY[i])+'</b><br>';
+      s+='<span style="color:#5d7aa6">累计同比</span>：<b style="color:'+((P.useYtd[i]||0)>=0?'#e5484d':'#1f9d55')+'">'+pct(P.useYtd[i])+'</b>';
+      return s;
+    }},
+    legend:{top:0,left:'center',textStyle:{color:'#5d7aa6'},inactiveColor:'#b9c9e2',data:['全社会用电量','当月同比','累计同比']},
+    grid:{left:64,right:56,top:40,bottom:54},
+    xAxis:{type:'category',data:M,axisLine:axL,axisLabel:{...axT,hideOverlap:true,showMaxLabel:true}},
+    yAxis:[
+      {type:'value',name:'亿千瓦时',splitLine:splL,axisLabel:axT,nameTextStyle:{color:'#5d7aa6',align:'right'}},
+      {type:'value',name:'%',scale:true,splitLine:{show:false},axisLabel:{...axT,formatter:'{value}%'},nameTextStyle:{color:'#5d7aa6',align:'left'}}
+    ],
+    dataZoom:[{type:'inside'},{...dzBase}],
+    series:[
+      {name:'全社会用电量',type:'bar',barMaxWidth:22,data:P.use,itemStyle:{color:'rgba(31,111,235,.55)'}},
+      {name:'当月同比',type:'line',yAxisIndex:1,smooth:true,symbol:'circle',symbolSize:4,connectNulls:false,data:P.useYoY,lineStyle:{width:2.2,color:'#f85149'},itemStyle:{color:'#f85149'}},
+      {name:'累计同比',type:'line',yAxisIndex:1,smooth:true,symbol:'circle',symbolSize:4,connectNulls:false,data:P.useYtd,lineStyle:{width:2.2,color:'#1f9d55'},itemStyle:{color:'#1f9d55'}}
+    ]
+  },powerCharts);
+
+  // —— 图4：分品种当月同比 ——
+  const yoySer=items.map(it=>({name:it.name,color:it.color,data:yoy12(P[it.key])}));
+  mk('p_yoy',{
+    tooltip:{...baseTip,formatter:ps=>{
+      let s='<b>'+ps[0].axisValue+'</b><br>';
+      ps.forEach(p=>{if(p.seriesName!=='_zero')s+=p.marker+p.seriesName+'：'+(p.value==null?'-':pct(p.value))+'<br>';});
+      return s;
+    }},
+    legend:{top:0,left:'center',textStyle:{color:'#5d7aa6'},inactiveColor:'#b9c9e2',data:yoySer.map(s=>s.name)},
+    grid:{left:60,right:18,top:40,bottom:54},
+    xAxis:{type:'category',data:M,axisLine:axL,axisLabel:{...axT,hideOverlap:true,showMaxLabel:true}},
+    yAxis:{type:'value',name:'%',scale:true,splitLine:splL,axisLabel:{...axT,formatter:'{value}%'},nameTextStyle:{color:'#5d7aa6',align:'right'}},
+    dataZoom:[{type:'inside'},{...dzBase}],
+    series:yoySer.map(s=>({name:s.name,type:'line',smooth:true,showSymbol:false,connectNulls:false,data:s.data,lineStyle:{width:2,color:s.color},itemStyle:{color:s.color}}))
+      .concat([{name:'_zero',type:'line',data:M.map(()=>null),silent:true,tooltip:{show:false},
+        markLine:{silent:true,symbol:'none',lineStyle:{color:'#b9c9e2',type:'dashed'},label:{show:false},data:[{yAxis:0}]}}])
+  },powerCharts);
+
+  // —— KPI ——
+  const ti=lastNN(P.total), ui=lastNN(P.use);
+  const head=[];
+  if(ti>=0)head.push(`<div class="kpi"><div class="label">总发电量（亿千瓦时）<span style="opacity:.7"> · ${M[ti]}</span></div>
+    <div class="val">${num(P.total[ti])}</div>
+    <div class="chg">${chgSpan(totYoY[ti],'当月同比').replace('class="chg ','class="')}</div></div>`);
+  if(ui>=0)head.push(`<div class="kpi"><div class="label">全社会用电量（亿千瓦时）<span style="opacity:.7"> · ${M[ui]}</span></div>
+    <div class="val">${num(P.use[ui])}</div>
+    <div class="chg">${chgSpan(P.useYoY[ui],'当月同比').replace('class="chg ','class="')} <span style="color:#cfe0f5">|</span> ${chgSpan(P.useYtd[ui],'累计同比').replace('class="chg ','class="')}</div></div>`);
+  const cards=items.map(it=>{
+    const a=P[it.key], i=lastNN(a);
+    if(i<0)return null;
+    const y=yoy12(a)[i], sh=(P.total[i])?a[i]/P.total[i]*100:null;
+    return `<div class="kpi"><div class="label">${it.name}（亿千瓦时）<span style="opacity:.7"> · ${M[i]}</span></div>
+      <div class="val">${num(a[i])}</div>
+      <div class="chg">${chgSpan(y,'当月同比').replace('class="chg ','class="')} <span style="color:#cfe0f5">|</span> ${sh==null?'<span style="color:#5d7aa6">占比 —</span>':'<span style="color:#16335f;font-weight:600">'+sh.toFixed(1)+'%</span> <span style="color:#5d7aa6">占比</span>'}</div></div>`;
+  }).filter(Boolean);
+  document.getElementById('pkpis').innerHTML=head.concat(cards).join('');
+}
+
+// ================= 面板3 宏观 =================
+function renderMacro(){
+  const Q=MACRO, M=Q.months;
+  document.getElementById('qrange').textContent=M[0]+' ~ '+M[M.length-1];
+  const pct=v=>v==null?'-':(v>=0?'+':'')+(+v).toFixed(1)+'%';
+  const barCol=p=>p.value>=0?'rgba(229,72,77,.55)':'rgba(31,157,85,.55)';
+
+  // —— PMI ——
+  mk('q_pmi',{
+    tooltip:{...baseTip,formatter:ps=>{
+      const i=ps[0].dataIndex, v=Q.pmi[i], pj=prevNN(Q.pmi,i);
+      let s='<b>'+ps[0].axisValue+'</b><br>'+ps[0].marker+'制造业PMI：<b>'+(v==null?'-':v.toFixed(1))+'</b><br>';
+      if(pj>=0&&v!=null)s+='<span style="color:#5d7aa6">环比</span>：'+((v-Q.pmi[pj])>=0?'+':'')+(v-Q.pmi[pj]).toFixed(1)+' pct<br>';
+      if(v!=null)s+='<span style="color:'+(v>=50?'#e5484d':'#1f9d55')+'">'+(v>=50?'位于扩张区间':'位于收缩区间')+'</span>';
+      return s;
+    }},
+    legend:{top:0,right:0,textStyle:{color:'#5d7aa6'},inactiveColor:'#b9c9e2',data:['制造业PMI']},
+    grid:{left:56,right:60,top:36,bottom:54},
+    xAxis:{type:'category',data:M,axisLine:axL,axisLabel:{...axT,hideOverlap:true,showMaxLabel:true}},
+    yAxis:{type:'value',scale:true,splitLine:splL,axisLabel:axT},
+    dataZoom:[{type:'inside'},{...dzBase}],
+    series:[{name:'制造业PMI',type:'line',smooth:true,symbol:'circle',symbolSize:4,connectNulls:false,data:Q.pmi,
+      lineStyle:{width:2.4,color:'#1f6feb'},itemStyle:{color:'#1f6feb'},
+      areaStyle:{color:'rgba(31,111,235,.06)'},
+      markLine:{silent:true,symbol:'none',lineStyle:{color:'#f85149',type:'dashed',width:1.4},
+        label:{show:true,position:'end',formatter:'荣枯线 50',color:'#f85149',fontSize:11},data:[{yAxis:50}]}}]
+  },macroCharts);
+
+  // —— CPI / PPI ——
+  function priceChart(id,name,yoyArr,momArr,color){
+    mk(id,{
+      tooltip:{...baseTip,formatter:ps=>{
+        const i=ps[0].dataIndex;
+        return '<b>'+ps[0].axisValue+'</b><br>'
+          +'<span style="color:'+color+'">●</span> '+name+'当月同比：<b>'+pct(yoyArr[i])+'</b><br>'
+          +'<span style="color:#8b98a8">▮</span> '+name+'环比：<b>'+pct(momArr[i])+'</b>';
+      }},
+      legend:{top:0,right:0,textStyle:{color:'#5d7aa6'},inactiveColor:'#b9c9e2',data:[name+'当月同比',name+'环比']},
+      grid:{left:56,right:52,top:36,bottom:54},
+      xAxis:{type:'category',data:M,axisLine:axL,axisLabel:{...axT,hideOverlap:true,showMaxLabel:true}},
+      yAxis:[
+        {type:'value',name:'同比%',scale:true,splitLine:splL,axisLabel:{...axT,formatter:'{value}%'},nameTextStyle:{color:'#5d7aa6',align:'right'}},
+        {type:'value',name:'环比%',scale:true,splitLine:{show:false},axisLabel:{...axT,formatter:'{value}%'},nameTextStyle:{color:'#5d7aa6',align:'left'}}
+      ],
+      dataZoom:[{type:'inside'},{...dzBase}],
+      series:[
+        {name:name+'环比',type:'bar',yAxisIndex:1,barMaxWidth:14,data:momArr,itemStyle:{color:barCol}},
+        {name:name+'当月同比',type:'line',smooth:true,showSymbol:false,connectNulls:false,data:yoyArr,lineStyle:{width:2.4,color:color},itemStyle:{color:color},
+         markLine:{silent:true,symbol:'none',lineStyle:{color:'#b9c9e2',type:'dashed'},label:{show:false},data:[{yAxis:0}]}}
+      ]
+    },macroCharts);
+  }
+  priceChart('q_cpi','CPI',Q.cpiYoY,Q.cpiMoM,'#1f6feb');
+  priceChart('q_ppi','PPI',Q.ppiYoY,Q.ppiMoM,'#d29922');
+
+  // —— 剪刀差 ——
+  const gap=Q.cpiYoY.map((v,i)=>(v==null||Q.ppiYoY[i]==null)?null:+(v-Q.ppiYoY[i]).toFixed(2));
+  mk('q_gap',{
+    tooltip:{...baseTip,formatter:ps=>{
+      const i=ps[0].dataIndex;
+      return '<b>'+ps[0].axisValue+'</b><br>'
+        +'<span style="color:#1f6feb">●</span> CPI当月同比：<b>'+pct(Q.cpiYoY[i])+'</b><br>'
+        +'<span style="color:#d29922">●</span> PPI当月同比：<b>'+pct(Q.ppiYoY[i])+'</b><br>'
+        +'<span style="color:#5d7aa6">剪刀差(CPI-PPI)</span>：<b>'+(gap[i]==null?'-':(gap[i]>=0?'+':'')+gap[i].toFixed(1)+' pct')+'</b>';
+    }},
+    legend:{top:0,left:'center',textStyle:{color:'#5d7aa6'},inactiveColor:'#b9c9e2',data:['CPI当月同比','PPI当月同比','剪刀差']},
+    grid:{left:60,right:18,top:40,bottom:54},
+    xAxis:{type:'category',data:M,axisLine:axL,axisLabel:{...axT,hideOverlap:true,showMaxLabel:true}},
+    yAxis:{type:'value',name:'%',scale:true,splitLine:splL,axisLabel:{...axT,formatter:'{value}%'},nameTextStyle:{color:'#5d7aa6',align:'right'}},
+    dataZoom:[{type:'inside'},{...dzBase}],
+    series:[
+      {name:'剪刀差',type:'bar',barMaxWidth:16,data:gap,itemStyle:{color:p=>p.value>=0?'rgba(137,87,229,.35)':'rgba(22,163,163,.35)'}},
+      {name:'CPI当月同比',type:'line',smooth:true,showSymbol:false,connectNulls:false,data:Q.cpiYoY,lineStyle:{width:2.4,color:'#1f6feb'},itemStyle:{color:'#1f6feb'}},
+      {name:'PPI当月同比',type:'line',smooth:true,showSymbol:false,connectNulls:false,data:Q.ppiYoY,lineStyle:{width:2.4,color:'#d29922'},itemStyle:{color:'#d29922'},
+       markLine:{silent:true,symbol:'none',lineStyle:{color:'#b9c9e2',type:'dashed'},label:{show:false},data:[{yAxis:0}]}}
+    ]
+  },macroCharts);
+
+  // —— KPI ——
+  const pi=lastNN(Q.pmi), ci=lastNN(Q.cpiYoY), qi=lastNN(Q.ppiYoY);
+  const out=[];
+  if(pi>=0){const pj=prevNN(Q.pmi,pi), d=pj>=0?Q.pmi[pi]-Q.pmi[pj]:null;
+    out.push(`<div class="kpi"><div class="label">制造业PMI<span style="opacity:.7"> · ${M[pi]}</span></div>
+      <div class="val">${Q.pmi[pi].toFixed(1)}</div>
+      <div class="chg">${d==null?'<span style="color:#5d7aa6">环比 —</span>':chgSpan(d,'环比',' pct').replace('class="chg ','class="')} <span style="color:#cfe0f5">|</span> <span style="color:${Q.pmi[pi]>=50?'#e5484d':'#1f9d55'}">${Q.pmi[pi]>=50?'扩张区间':'收缩区间'}</span></div></div>`);}
+  if(ci>=0)out.push(`<div class="kpi"><div class="label">CPI 当月同比<span style="opacity:.7"> · ${M[ci]}</span></div>
+    <div class="val">${pct(Q.cpiYoY[ci])}</div>
+    <div class="chg">${flatSpan(Q.cpiMoM[ci],'环比')}</div></div>`);
+  if(qi>=0)out.push(`<div class="kpi"><div class="label">PPI 当月同比<span style="opacity:.7"> · ${M[qi]}</span></div>
+    <div class="val">${pct(Q.ppiYoY[qi])}</div>
+    <div class="chg">${flatSpan(Q.ppiMoM[qi],'环比')}</div></div>`);
+  if(ci>=0&&qi>=0){const g=Q.cpiYoY[ci]-Q.ppiYoY[qi];
+    out.push(`<div class="kpi"><div class="label">CPI-PPI 剪刀差<span style="opacity:.7"> · ${M[ci]}</span></div>
+      <div class="val">${(g>=0?'+':'')+g.toFixed(1)}<span class="unit">pct</span></div>
+      <div class="chg"><span style="color:#5d7aa6">${g>=0?'CPI高于PPI':'PPI高于CPI'}</span></div></div>`);}
+  document.getElementById('qkpis').innerHTML=out.join('');
+}
+
 // ================= 标签切换 =================
+let powerInited=false, macroInited=false;
 function showTab(name){
   document.querySelectorAll('.tabpane').forEach(p=>p.classList.toggle('active',p.id==='tab-'+name));
   document.querySelectorAll('.tab').forEach(b=>b.classList.toggle('active',b.dataset.tab===name));
-  setTimeout(()=>memCharts.forEach(c=>c.resize()),0);
+  if(name==='power' && !powerInited){ renderPower(); powerInited=true; }
+  if(name==='macro' && !macroInited){ renderMacro(); macroInited=true; }
+  const arr=name==='power'?powerCharts:(name==='macro'?macroCharts:memCharts);
+  setTimeout(()=>arr.forEach(c=>c.resize()),0);
 }
 document.querySelectorAll('.tab').forEach(b=>b.addEventListener('click',()=>showTab(b.dataset.tab)));
 function toggleCL(){var b=document.getElementById('cl-box'),o=document.getElementById('cl-overlay');var open=b.style.display==='block';b.style.display=open?'none':'block';o.style.display=open?'none':'block';}
