@@ -56,19 +56,20 @@
 <div id="cl-overlay" onclick="closeCL()"></div>
 <div id="cl-box">
   <h3>📋 更新日志</h3>
-  <div class="cl-item"><span class="cl-date">8月4日</span>新增面板3宏观数据跟踪：制造业PMI、CPI、PPI（同比＋环比），含CPI-PPI剪刀差</div>
-  <div class="cl-item"><span class="cl-date">8月4日</span>新增面板2发电结构跟踪：分能源发电量、发电结构占比、全社会用电量及当月/累计同比（2021-01起）</div>
+  <div class="cl-item"><span class="cl-date">8月12日</span>面板顺序调整为 ①宏观 ②发电 ③存储；中国CPI的当月同比与环比拆为两张独立图，右端标注最新值</div>
+  <div class="cl-item"><span class="cl-date">8月4日</span>新增宏观数据跟踪：制造业PMI、CPI、PPI（同比＋环比），含CPI-PPI剪刀差</div>
+  <div class="cl-item"><span class="cl-date">8月4日</span>新增发电结构跟踪：分能源发电量、发电结构占比、全社会用电量及当月/累计同比（2021-01起）</div>
   <div class="cl-item"><span class="cl-date">8月4日</span>面板1上线：NAND Flash / DRAM 现货价（Wind·DRAMeXchange），含分品类走势、归一化价格指数及KPI</div>
 </div>
 <h1>【华泰电新】AI产业链跟踪</h1>
 <div class="tabs">
-  <button class="tab active" data-tab="mem">① 存储价格跟踪</button>
+  <button class="tab active" data-tab="macro">① 宏观数据跟踪</button>
   <button class="tab" data-tab="power">② 发电结构跟踪</button>
-  <button class="tab" data-tab="macro">③ 宏观数据跟踪</button>
+  <button class="tab" data-tab="mem">③ 存储价格跟踪</button>
 </div>
 
-<!-- ============ TAB 1: 存储价格 ============ -->
-<section id="tab-mem" class="tabpane active">
+<!-- ============ TAB ③: 存储价格（展示顺序由上方 tab 栏决定，此处为源码顺序） ============ -->
+<section id="tab-mem" class="tabpane">
   <div class="meta">
     数据区间：<b id="mrange"></b>&nbsp;·&nbsp;频率：NAND 周度（2024年7月前为日度）／DRAM 日度&nbsp;·&nbsp;资料来源：Wind、DRAMeXchange<br>
     口径：现货平均价，单位均为 <b>美元/颗</b>。NAND 取 64Gb(8Gx8) MLC 与 32Gb(4Gx8) MLC；DRAM 取 DDR4 8Gb(512Mx16, 3200Mbps) 与 DDR5 16Gb(2Gx8, 4800/5600Mbps)。<br>
@@ -115,11 +116,11 @@
   </div>
 </section>
 
-<!-- ============ TAB 3: 宏观数据 ============ -->
-<section id="tab-macro" class="tabpane">
+<!-- ============ TAB ①: 宏观数据 ============ -->
+<section id="tab-macro" class="tabpane active">
   <div class="meta">
     数据区间：<b id="qrange"></b>&nbsp;·&nbsp;频率：月度&nbsp;·&nbsp;资料来源：Wind（国家统计局、中国物流与采购联合会）<br>
-    制造业PMI 以 <b>50</b> 为荣枯线（图中红色虚线）。CPI／PPI 同时展示 <b>当月同比</b>（线）与 <b>环比</b>（柱），单位均为 %。最新月若指标尚未发布则不作图。<br>
+    制造业PMI 以 <b>50</b> 为荣枯线（图中红色虚线）。CPI 的当月同比与环比<b>分列两图</b>；PPI 同比（线）与环比（柱）共用一个纵轴。单位均为 %，图中标注为最新一期数值。最新月若指标尚未发布则不作图。<br>
     若有任何使用意见或修改建议，欢迎联系邵梓洋 13143711234
   </div>
   <div class="kpis" id="qkpis"></div>
@@ -129,10 +130,11 @@
     <div class="card full"><h2>中国制造业PMI</h2><div class="ch">单位：% · 月度 · 50为荣枯线</div><div id="q_pmi" class="chart" style="height:380px"></div><div class="src">资料来源：Wind、国家统计局</div></div>
   </div>
 
-  <div class="sec gold">物价</div>
+  <div class="sec gold">中国物价</div>
   <div class="grid">
-    <div class="card"><h2>CPI</h2><div class="ch">单位：% · 线＝当月同比 · 柱＝环比 · 共用一个纵轴</div><div id="q_cpi" class="chart"></div><div class="src">资料来源：Wind、国家统计局</div></div>
-    <div class="card"><h2>PPI</h2><div class="ch">单位：% · 线＝当月同比 · 柱＝环比 · 共用一个纵轴</div><div id="q_ppi" class="chart"></div><div class="src">资料来源：Wind、国家统计局</div></div>
+    <div class="card"><h2>中国CPI：当月同比</h2><div class="ch">单位：% · 月度 · 右端标注最新值</div><div id="q_cpi_yoy" class="chart"></div><div class="src">资料来源：Wind、国家统计局</div></div>
+    <div class="card"><h2>中国CPI：环比</h2><div class="ch">单位：% · 月度 · 右端标注最新值</div><div id="q_cpi_mom" class="chart"></div><div class="src">资料来源：Wind、国家统计局</div></div>
+    <div class="card full"><h2>中国PPI</h2><div class="ch">单位：% · 线＝当月同比 · 柱＝环比 · 共用一个纵轴</div><div id="q_ppi" class="chart"></div><div class="src">资料来源：Wind、国家统计局</div></div>
     <div class="card full"><h2>CPI-PPI 剪刀差</h2><div class="ch">单位：% · 线＝CPI／PPI当月同比 · 柱＝CPI同比－PPI同比（pct）</div><div id="q_gap" class="chart" style="height:380px"></div><div class="src">资料来源：Wind、国家统计局，华泰研究测算</div></div>
   </div>
 </section>
@@ -413,7 +415,34 @@ function renderMacro(){
         label:{show:true,position:'end',formatter:'荣枯线 50',color:'#f85149',fontSize:11},data:[{yAxis:50}]}}]
   },macroCharts);
 
-  // —— CPI / PPI ——
+  // —— 单序列图（同比／环比各自成图，右端标注最新值）——
+  // 末值标签用 markPoint 落在最后一个非空点上，避免最新月未发布时 endLabel 落空
+  function soloChart(id,label,arr,color,bucket){
+    const li=lastNN(arr);
+    mk(id,{
+      tooltip:{...baseTip,formatter:ps=>{
+        const i=ps[0].dataIndex;
+        return '<b>'+ps[0].axisValue+'</b><br>'+ps[0].marker+label+'：<b>'+pct(arr[i])+'</b>';
+      }},
+      legend:{top:0,right:0,textStyle:{color:'#5d7aa6'},inactiveColor:'#b9c9e2',data:[label]},
+      grid:{left:56,right:62,top:36,bottom:54},
+      xAxis:{type:'category',data:M,axisLine:axL,axisLabel:{...axT,hideOverlap:true,showMaxLabel:true}},
+      yAxis:{type:'value',name:'%',scale:true,splitLine:splL,axisLabel:{...axT,formatter:'{value}%'},nameTextStyle:{color:'#5d7aa6',align:'right'}},
+      dataZoom:[{type:'inside'},{...dzBase}],
+      series:[{name:label,type:'line',smooth:true,showSymbol:false,connectNulls:false,data:arr,
+        lineStyle:{width:2.4,color:color},itemStyle:{color:color},
+        markLine:{silent:true,symbol:'none',lineStyle:{color:'#b9c9e2',type:'dashed'},label:{show:false},data:[{yAxis:0}]},
+        ...(li>=0?{markPoint:{silent:true,symbol:'circle',symbolSize:7,itemStyle:{color:color},
+          label:{show:true,position:'right',distance:7,color:color,fontWeight:'bold',fontSize:12,
+            formatter:p=>(p.value>=0?'+':'')+(+p.value).toFixed(2)+'%'},
+          data:[{coord:[M[li],arr[li]],value:arr[li]}]}}:{})
+      }]
+    },bucket||macroCharts);
+  }
+  soloChart('q_cpi_yoy','中国CPI当月同比',Q.cpiYoY,'#1f6feb');
+  soloChart('q_cpi_mom','中国CPI环比',Q.cpiMoM,'#8957e5');
+
+  // —— PPI（同比线＋环比柱，共用一个纵轴）——
   function priceChart(id,name,yoyArr,momArr,color){
     mk(id,{
       tooltip:{...baseTip,formatter:ps=>{
@@ -434,7 +463,6 @@ function renderMacro(){
       ]
     },macroCharts);
   }
-  priceChart('q_cpi','CPI',Q.cpiYoY,Q.cpiMoM,'#1f6feb');
   priceChart('q_ppi','PPI',Q.ppiYoY,Q.ppiMoM,'#d29922');
 
   // —— 剪刀差 ——
@@ -481,20 +509,20 @@ function renderMacro(){
 }
 
 // ================= 标签切换 =================
-let powerInited=false, macroInited=false;
+let powerInited=false, memInited=false;
 function showTab(name){
   document.querySelectorAll('.tabpane').forEach(p=>p.classList.toggle('active',p.id==='tab-'+name));
   document.querySelectorAll('.tab').forEach(b=>b.classList.toggle('active',b.dataset.tab===name));
   if(name==='power' && !powerInited){ renderPower(); powerInited=true; }
-  if(name==='macro' && !macroInited){ renderMacro(); macroInited=true; }
-  const arr=name==='power'?powerCharts:(name==='macro'?macroCharts:memCharts);
+  if(name==='mem'   && !memInited){   renderMem();   memInited=true; }
+  const arr=name==='power'?powerCharts:(name==='mem'?memCharts:macroCharts);
   setTimeout(()=>arr.forEach(c=>c.resize()),0);
 }
 document.querySelectorAll('.tab').forEach(b=>b.addEventListener('click',()=>showTab(b.dataset.tab)));
 function toggleCL(){var b=document.getElementById('cl-box'),o=document.getElementById('cl-overlay');var open=b.style.display==='block';b.style.display=open?'none':'block';o.style.display=open?'none':'block';}
 function closeCL(){document.getElementById('cl-box').style.display='none';document.getElementById('cl-overlay').style.display='none';}
 
-renderMem();
+renderMacro();
 </script>
 </body>
 </html>
