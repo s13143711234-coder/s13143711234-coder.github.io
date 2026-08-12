@@ -24,6 +24,8 @@
   .meta b{color:var(--txt)}
   .sec{font-size:18px;font-weight:700;margin:30px 0 4px;padding-left:11px;border-left:5px solid var(--accent2)}
   .sec.green{border-color:var(--accent)}.sec.gold{border-color:#d29922}.sec.red{border-color:#f85149}
+  .seclabel{font-size:14.5px;font-weight:700;color:var(--accent2);margin:20px 0 2px;padding-left:9px;border-left:4px solid var(--accent2)}
+  .seclabel.red{color:#c0392b;border-color:#f85149}
   .kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:14px;margin:18px 0 8px}
   .kpi{background:linear-gradient(160deg,var(--panel2),var(--panel));border:1px solid var(--line);border-radius:12px;padding:15px 17px;box-shadow:0 4px 14px rgba(31,111,235,.08)}
   .kpi .label{font-size:12.5px;color:var(--sub)}
@@ -56,7 +58,8 @@
 <div id="cl-overlay" onclick="closeCL()"></div>
 <div id="cl-box">
   <h3>📋 更新日志</h3>
-  <div class="cl-item"><span class="cl-date">8月12日</span>面板顺序调整为 ①宏观 ②发电 ③存储；中国CPI的当月同比与环比拆为两张独立图，右端标注最新值</div>
+  <div class="cl-item"><span class="cl-date">8月12日</span>面板①重构为「中国 / 美国」两大块：各含 CPI（含核心）、PPI、PMI，同比与环比分列两图共10张；新增美国CPI/PPI/ISM制造业·服务业PMI；数据更新至2026年7月</div>
+  <div class="cl-item"><span class="cl-date">8月12日</span>面板顺序调整为 ①宏观 ②发电 ③存储；CPI的当月同比与环比拆为两张独立图，右端标注最新值</div>
   <div class="cl-item"><span class="cl-date">8月4日</span>新增宏观数据跟踪：制造业PMI、CPI、PPI（同比＋环比），含CPI-PPI剪刀差</div>
   <div class="cl-item"><span class="cl-date">8月4日</span>新增发电结构跟踪：分能源发电量、发电结构占比、全社会用电量及当月/累计同比（2021-01起）</div>
   <div class="cl-item"><span class="cl-date">8月4日</span>面板1上线：NAND Flash / DRAM 现货价（Wind·DRAMeXchange），含分品类走势、归一化价格指数及KPI</div>
@@ -119,28 +122,50 @@
 <!-- ============ TAB ①: 宏观数据 ============ -->
 <section id="tab-macro" class="tabpane active">
   <div class="meta">
-    数据区间：<b id="qrange"></b>&nbsp;·&nbsp;频率：月度&nbsp;·&nbsp;资料来源：Wind（国家统计局、中国物流与采购联合会）<br>
-    制造业PMI 以 <b>50</b> 为荣枯线（图中红色虚线）。CPI 的当月同比与环比<b>分列两图</b>；PPI 同比（线）与环比（柱）共用一个纵轴。单位均为 %，图中标注为最新一期数值。最新月若指标尚未发布则不作图。<br>
+    数据区间：<b id="qrange"></b>&nbsp;·&nbsp;频率：月度&nbsp;·&nbsp;资料来源：Wind（国家统计局、中国物流与采购联合会、美国劳工统计局BLS、ISM）<br>
+    单位均为 <b>%</b>。每类指标的<b>同比与环比分列两图</b>，每图内主口径与核心／次级口径两条线对照；各图右端标注最新一期数值，零轴为灰色虚线，PMI 图以 <b>50</b> 为荣枯线。<br>
+    <b>口径注：</b>美国 CPI／PPI 同比为<b>非季调</b>、环比为<b>季调</b>（环比不季调噪音过大）；美国 PPI 取<b>最终需求</b>，核心为<b>不含食品、能源和贸易服务</b>。中国不发布核心PPI，PPI 图第二条线为<b>生活资料PPI</b>（PPI 的分项，非核心口径），仅作结构参考。<br>
+    <b>缺失注：</b>2025年10月美国联邦政府停摆，BLS 未发布该月 CPI，图中为断点；最新月尚未发布的指标同样留空、不插值。<br>
     若有任何使用意见或修改建议，欢迎联系邵梓洋 13143711234
   </div>
-  <div class="kpis" id="qkpis"></div>
 
-  <div class="sec">制造业PMI</div>
+  <div class="sec">一、中国</div>
+  <div class="kpis" id="cn_kpis"></div>
+  <div class="seclabel">CPI（含核心CPI）</div>
   <div class="grid">
-    <div class="card full"><h2>中国制造业PMI</h2><div class="ch">单位：% · 月度 · 50为荣枯线</div><div id="q_pmi" class="chart" style="height:380px"></div><div class="src">资料来源：Wind、国家统计局</div></div>
+    <div class="card"><h2>中国CPI：当月同比</h2><div class="ch">单位：% · CPI／核心CPI（不包括食品和能源）</div><div id="cn_cpi_yoy" class="chart"></div><div class="src">资料来源：Wind、国家统计局</div></div>
+    <div class="card"><h2>中国CPI：环比</h2><div class="ch">单位：% · CPI／核心CPI（不包括食品和能源）</div><div id="cn_cpi_mom" class="chart"></div><div class="src">资料来源：Wind、国家统计局</div></div>
+  </div>
+  <div class="seclabel">PPI（含生活资料PPI）</div>
+  <div class="grid">
+    <div class="card"><h2>中国PPI：当月同比</h2><div class="ch">单位：% · PPI／生活资料PPI（分项，非核心口径）</div><div id="cn_ppi_yoy" class="chart"></div><div class="src">资料来源：Wind、国家统计局</div></div>
+    <div class="card"><h2>中国PPI：环比</h2><div class="ch">单位：% · PPI／生活资料PPI（分项，非核心口径）</div><div id="cn_ppi_mom" class="chart"></div><div class="src">资料来源：Wind、国家统计局</div></div>
+  </div>
+  <div class="seclabel">PMI</div>
+  <div class="grid">
+    <div class="card full"><h2>中国制造业PMI</h2><div class="ch">单位：% · 月度 · 50为荣枯线，线上为扩张、线下为收缩</div><div id="cn_pmi" class="chart" style="height:360px"></div><div class="src">资料来源：Wind、国家统计局</div></div>
   </div>
 
-  <div class="sec gold">中国物价</div>
+  <div class="sec red">二、美国</div>
+  <div class="kpis" id="us_kpis"></div>
+  <div class="seclabel red">CPI（含核心CPI）</div>
   <div class="grid">
-    <div class="card"><h2>中国CPI：当月同比</h2><div class="ch">单位：% · 月度 · 右端标注最新值</div><div id="q_cpi_yoy" class="chart"></div><div class="src">资料来源：Wind、国家统计局</div></div>
-    <div class="card"><h2>中国CPI：环比</h2><div class="ch">单位：% · 月度 · 右端标注最新值</div><div id="q_cpi_mom" class="chart"></div><div class="src">资料来源：Wind、国家统计局</div></div>
-    <div class="card full"><h2>中国PPI</h2><div class="ch">单位：% · 线＝当月同比 · 柱＝环比 · 共用一个纵轴</div><div id="q_ppi" class="chart"></div><div class="src">资料来源：Wind、国家统计局</div></div>
-    <div class="card full"><h2>CPI-PPI 剪刀差</h2><div class="ch">单位：% · 线＝CPI／PPI当月同比 · 柱＝CPI同比－PPI同比（pct）</div><div id="q_gap" class="chart" style="height:380px"></div><div class="src">资料来源：Wind、国家统计局，华泰研究测算</div></div>
+    <div class="card"><h2>美国CPI：同比</h2><div class="ch">单位：% · 非季调 · CPI／核心CPI（不含食品和能源）</div><div id="us_cpi_yoy" class="chart"></div><div class="src">资料来源：Wind、美国劳工统计局</div></div>
+    <div class="card"><h2>美国CPI：环比</h2><div class="ch">单位：% · <b>季调</b> · CPI／核心CPI（不含食品和能源）</div><div id="us_cpi_mom" class="chart"></div><div class="src">资料来源：Wind、美国劳工统计局</div></div>
+  </div>
+  <div class="seclabel red">PPI（最终需求）</div>
+  <div class="grid">
+    <div class="card"><h2>美国PPI：同比</h2><div class="ch">单位：% · 非季调 · 最终需求／核心（不含食品、能源和贸易服务）</div><div id="us_ppi_yoy" class="chart"></div><div class="src">资料来源：Wind、美国劳工统计局</div></div>
+    <div class="card"><h2>美国PPI：环比</h2><div class="ch">单位：% · <b>季调</b> · 最终需求／核心（不含食品、能源和贸易服务）</div><div id="us_ppi_mom" class="chart"></div><div class="src">资料来源：Wind、美国劳工统计局</div></div>
+  </div>
+  <div class="seclabel red">PMI</div>
+  <div class="grid">
+    <div class="card full"><h2>美国ISM PMI：制造业 / 服务业</h2><div class="ch">单位：% · 月度 · 50为荣枯线 · 服务业为ISM非制造业指数</div><div id="us_pmi" class="chart" style="height:360px"></div><div class="src">资料来源：Wind、ISM</div></div>
   </div>
 </section>
 
 <footer>
-  数据来源：Wind（DRAMeXchange、国家统计局、国家能源局、中国物流与采购联合会）。本页仅为内部跟踪用途，不构成投资建议。
+  数据来源：Wind（DRAMeXchange、国家统计局、国家能源局、中国物流与采购联合会、美国劳工统计局BLS、ISM）。本页仅为内部跟踪用途，不构成投资建议。
 </footer>
 
 <script>
@@ -163,12 +188,21 @@ const POWER={months:["2021-01","2021-02","2021-03","2021-04","2021-05","2021-06"
   use:[7324.6,5263.8,6631.1,6361.5,6724.1,7033.4,7758,7607.3,6946.9,6603.1,6718,8155.7,7231.8,6235,6944.1,6362,6715.6,7451.3,8323.9,8520.4,7092.3,6834.1,6827.8,7784.5,6884,6950,7368.7,6900.5,7221.9,7750.9,8887.8,8861.1,7810.6,7419.3,7630.4,8563,null,6845.3,7942.3,7412.3,7750.9,8205,9395.8,9649,8475,7742.4,7848.7,8835.2,8130,7434,8282.4,7721,8096,8670.4,10225.6,10154.3,8886.3,8571.6,8355.5,9080,null,8595,8594.8,8205.2,8671.3,8981.5,null],
   useYoY:[26.16,18.53,20.73,14.17,13.47,10.75,13.68,4.3,7.63,6.11,3.1,-2.18,-1.27,16.94,3.5,-1.3,-1.3,4.7,6.3,10.7,0.89,2.24,0.43,-4.55,-4.8,11,5.92,8.33,7.4,3.87,6.46,3.89,9.89,8.39,11.6,10,null,null,7.36,6.96,7.22,5.83,5.69,8.87,8.52,4.33,2.79,3.18,null,8.6,4.8,4.68,4.43,5.42,8.58,4.99,4.54,10.36,6.17,2.77,null,15.62,3.52,5.99,6.89,3.69,null],
   useYtd:[null,22.24,21.24,19.12,17.69,16.21,15.61,13.8,12.9,12.23,11.4,10.3,null,5.79,5,3.4,2.5,2.9,3.4,4.4,4,3.8,3.5,3.6,-4.8,2.3,3.6,4.7,5.2,5,5.2,5,5.6,5.8,6.3,6.7,null,11,9.8,9,8.6,8.1,7.7,7.9,7.9,7.6,7.1,6.8,null,1.3,2.5,3.1,3.4,3.7,4.5,4.6,4.6,5.1,5.2,5,null,6.1,5.2,5.4,5.7,5.3,null]};
+// ===== China / US macro: CPI, PPI, PMI (Wind) =====
 const MACRO={months:["2021-01","2021-02","2021-03","2021-04","2021-05","2021-06","2021-07","2021-08","2021-09","2021-10","2021-11","2021-12","2022-01","2022-02","2022-03","2022-04","2022-05","2022-06","2022-07","2022-08","2022-09","2022-10","2022-11","2022-12","2023-01","2023-02","2023-03","2023-04","2023-05","2023-06","2023-07","2023-08","2023-09","2023-10","2023-11","2023-12","2024-01","2024-02","2024-03","2024-04","2024-05","2024-06","2024-07","2024-08","2024-09","2024-10","2024-11","2024-12","2025-01","2025-02","2025-03","2025-04","2025-05","2025-06","2025-07","2025-08","2025-09","2025-10","2025-11","2025-12","2026-01","2026-02","2026-03","2026-04","2026-05","2026-06","2026-07"],
-  pmi:[51.3,50.6,51.9,51.1,51,50.9,50.4,50.1,49.6,49.2,50.1,50.3,50.1,50.2,49.5,47.4,49.6,50.2,49,49.4,50.1,49.2,48,47,50.1,52.6,51.9,49.2,48.8,49,49.3,49.7,50.2,49.5,49.4,49,49.2,49.1,50.8,50.4,49.5,49.5,49.4,49.1,49.8,50.1,50.3,50.1,49.1,50.2,50.5,49,49.5,49.7,49.3,49.4,49.8,49,49.2,50.1,49.3,49,50.4,50.3,50,50.3,49.2],
-  ppiYoY:[0.3,1.7,4.4,6.8,9,8.8,9,9.5,10.7,13.5,12.9,10.3,9.1,8.8,8.3,8,6.4,6.1,4.2,2.3,0.9,-1.3,-1.3,-0.7,-0.8,-1.4,-2.5,-3.6,-4.6,-5.4,-4.4,-3,-2.5,-2.6,-3,-2.7,-2.5,-2.7,-2.8,-2.5,-1.4,-0.8,-0.8,-1.8,-2.8,-2.9,-2.5,-2.3,-2.3,-2.2,-2.5,-2.7,-3.3,-3.6,-3.6,-2.9,-2.3,-2.1,-2.2,-1.9,-1.4,-0.9,0.5,2.8,3.9,4.1,null],
-  ppiMoM:[1,0.8,1.6,0.9,1.6,0.3,0.5,0.7,1.2,2.5,0,-1.2,-0.2,0.5,1.1,0.6,0.1,0,-1.3,-1.2,-0.1,0.2,0.1,-0.5,-0.4,0,0,-0.5,-0.9,-0.8,-0.2,0.2,0.4,0,-0.3,-0.3,-0.2,-0.2,-0.1,-0.2,0.2,-0.2,-0.2,-0.7,-0.6,-0.1,0.1,-0.1,-0.2,-0.1,-0.4,-0.4,-0.4,-0.4,-0.2,0,0,0.1,0.1,0.2,0.4,0.4,1,1.7,0.5,-0.3,null],
-  cpiYoY:[-0.3,-0.2,0.4,0.9,1.3,1.1,1,0.8,0.7,1.5,2.3,1.5,0.9,0.9,1.5,2.1,2.1,2.5,2.7,2.5,2.8,2.1,1.6,1.8,2.1,1,0.7,0.1,0.2,0,-0.3,0.1,0,-0.2,-0.5,-0.3,-0.8,0.7,0.1,0.3,0.3,0.2,0.5,0.6,0.4,0.3,0.2,0.1,0.5,-0.7,-0.1,-0.1,-0.1,0.1,0,-0.4,-0.3,0.2,0.7,0.8,0.2,1.3,1,1.2,1.2,1,null],
-  cpiMoM:[1,0.6,-0.5,-0.3,-0.2,-0.4,0.3,0.1,0,0.7,0.4,-0.3,0.4,0.6,0,0.4,-0.2,0,0.5,-0.1,0.3,0.1,-0.2,0,0.8,-0.5,-0.3,-0.1,-0.2,-0.2,0.2,0.3,0.2,-0.1,-0.5,0.1,0.3,1,-1,0.1,-0.1,-0.2,0.5,0.4,0,-0.3,-0.6,0,0.7,-0.2,-0.4,0.1,-0.2,-0.1,0.4,0,0.1,0.2,-0.1,0.2,0.2,1,-0.7,0.3,-0.1,-0.3,null]};
+  cn:{
+    cpiYoY:[-0.3,-0.2,0.4,0.9,1.3,1.1,1,0.8,0.7,1.5,2.3,1.5,0.9,0.9,1.5,2.1,2.1,2.5,2.7,2.5,2.8,2.1,1.6,1.8,2.1,1,0.7,0.1,0.2,0,-0.3,0.1,0,-0.2,-0.5,-0.3,-0.8,0.7,0.1,0.3,0.3,0.2,0.5,0.6,0.4,0.3,0.2,0.1,0.5,-0.7,-0.1,-0.1,-0.1,0.1,0,-0.4,-0.3,0.2,0.7,0.8,0.2,1.3,1,1.2,1.2,1,0.5], cpiMoM:[1,0.6,-0.5,-0.3,-0.2,-0.4,0.3,0.1,0,0.7,0.4,-0.3,0.4,0.6,0,0.4,-0.2,0,0.5,-0.1,0.3,0.1,-0.2,0,0.8,-0.5,-0.3,-0.1,-0.2,-0.2,0.2,0.3,0.2,-0.1,-0.5,0.1,0.3,1,-1,0.1,-0.1,-0.2,0.5,0.4,0,-0.3,-0.6,0,0.7,-0.2,-0.4,0.1,-0.2,-0.1,0.4,0,0.1,0.2,-0.1,0.2,0.2,1,-0.7,0.3,-0.1,-0.3,-0.1],
+    cpiCoreYoY:[-0.3,0,0.3,0.7,0.9,0.9,1.3,1.2,1.2,1.3,1.2,1.2,1.2,1.1,1.1,0.9,0.9,1,0.8,0.8,0.6,0.6,0.6,0.7,1,0.6,0.7,0.7,0.6,0.4,0.8,0.8,0.8,0.6,0.6,0.6,0.4,1.2,0.6,0.7,0.6,0.6,0.4,0.3,0.1,0.2,0.3,0.4,0.6,-0.1,0.5,0.5,0.6,0.7,0.8,0.9,1,1.2,1.2,1.2,0.8,1.8,1.1,1.2,1.1,1,0.9], cpiCoreMoM:[0.1,0.2,0,0.3,0.1,-0.1,0.3,0,0.2,0.1,-0.2,0,0.1,0.2,-0.1,0.1,0,0.1,0.1,0,0,0.1,-0.2,0.1,0.4,-0.2,0,0.1,0,-0.1,0.5,0,0.1,0,-0.3,0.1,0.3,0.5,-0.6,0.2,-0.2,-0.1,0.3,-0.2,-0.1,0,-0.1,0.2,0.5,-0.2,0,0.2,0,0,0.4,0,0,0.2,-0.1,0.2,0.3,0.7,-0.7,0.2,-0.1,-0.1,0.3],
+    ppiYoY:[0.3,1.7,4.4,6.8,9,8.8,9,9.5,10.7,13.5,12.9,10.3,9.1,8.8,8.3,8,6.4,6.1,4.2,2.3,0.9,-1.3,-1.3,-0.7,-0.8,-1.4,-2.5,-3.6,-4.6,-5.4,-4.4,-3,-2.5,-2.6,-3,-2.7,-2.5,-2.7,-2.8,-2.5,-1.4,-0.8,-0.8,-1.8,-2.8,-2.9,-2.5,-2.3,-2.3,-2.2,-2.5,-2.7,-3.3,-3.6,-3.6,-2.9,-2.3,-2.1,-2.2,-1.9,-1.4,-0.9,0.5,2.8,3.9,4.1,3.5], ppiMoM:[1,0.8,1.6,0.9,1.6,0.3,0.5,0.7,1.2,2.5,0,-1.2,-0.2,0.5,1.1,0.6,0.1,0,-1.3,-1.2,-0.1,0.2,0.1,-0.5,-0.4,0,0,-0.5,-0.9,-0.8,-0.2,0.2,0.4,0,-0.3,-0.3,-0.2,-0.2,-0.1,-0.2,0.2,-0.2,-0.2,-0.7,-0.6,-0.1,0.1,-0.1,-0.2,-0.1,-0.4,-0.4,-0.4,-0.4,-0.2,0,0,0.1,0.1,0.2,0.4,0.4,1,1.7,0.5,-0.3,-0.7],
+    ppiLifeYoY:[-0.2,-0.2,0.1,0.3,0.5,0.3,0.3,0.3,0.4,0.6,1,1,0.8,0.9,0.9,1,1.2,1.7,1.7,1.6,1.8,2.2,2,1.8,1.5,1.1,0.9,0.4,-0.1,-0.5,-0.4,-0.2,-0.3,-0.9,-1.2,-1.2,-1.1,-0.9,-1,-0.9,-0.8,-0.8,-1,-1.1,-1.3,-1.6,-1.4,-1.4,-1.2,-1.2,-1.5,-1.6,-1.4,-1.4,-1.6,-1.7,-1.7,-1.4,-1.5,-1.3,-1.7,-1.6,-1.3,-1,-0.8,-0.9,-0.8], ppiLifeMoM:[0.2,0,0.2,0.1,0.1,-0.2,0.1,0,0,0.1,0.4,0,0,0.1,0.2,0.2,0.3,0.3,0.2,-0.1,0.1,0.5,0.1,-0.2,-0.3,-0.3,0,-0.3,-0.2,-0.2,0.3,0.1,0.1,-0.1,-0.2,-0.1,-0.2,-0.1,-0.1,-0.1,-0.1,-0.1,0,0,-0.1,-0.4,0,-0.1,0,0,-0.4,-0.2,0,-0.1,-0.2,-0.1,-0.2,0,0,0,0.1,0,-0.1,-0.1,0,-0.3,-0.1],
+    pmi:[51.3,50.6,51.9,51.1,51,50.9,50.4,50.1,49.6,49.2,50.1,50.3,50.1,50.2,49.5,47.4,49.6,50.2,49,49.4,50.1,49.2,48,47,50.1,52.6,51.9,49.2,48.8,49,49.3,49.7,50.2,49.5,49.4,49,49.2,49.1,50.8,50.4,49.5,49.5,49.4,49.1,49.8,50.1,50.3,50.1,49.1,50.2,50.5,49,49.5,49.7,49.3,49.4,49.8,49,49.2,50.1,49.3,49,50.4,50.3,50,50.3,49.2]},
+  us:{
+    cpiYoY:[1.4,1.7,2.6,4.2,5,5.4,5.4,5.3,5.4,6.2,6.8,7,7.5,7.9,8.5,8.3,8.6,9.1,8.5,8.3,8.2,7.7,7.1,6.5,6.4,6,5,4.9,4,3,3.2,3.7,3.7,3.2,3.1,3.4,3.1,3.2,3.5,3.4,3.3,3,2.9,2.5,2.4,2.6,2.7,2.9,3,2.8,2.4,2.3,2.4,2.7,2.7,2.9,3,null,2.7,2.7,2.4,2.4,3.3,3.8,4.2,3.5,3.4], cpiMoM:[0.2,0.3,0.5,0.6,0.7,0.8,0.5,0.3,0.5,1,0.9,0.7,0.6,0.7,1.1,0.3,0.9,1.3,0,0.1,0.4,0.6,0.3,0,0.5,0.3,0.1,0.3,0.2,0.2,0.2,0.5,0.4,0.1,0.1,0.2,0.3,0.4,0.4,0.2,0,0,0.2,0.2,0.2,0.3,0.3,0.3,0.4,0.2,0,0.2,0.1,0.3,0.2,0.3,0.3,null,0,0.3,0.2,0.3,0.9,0.6,0.5,-0.4,0.1],
+    cpiCoreYoY:[1.4,1.3,1.6,3,3.8,4.5,4.3,4,4,4.6,4.9,5.5,6,6.4,6.5,6.2,6,5.9,5.9,6.3,6.6,6.3,6,5.7,5.6,5.5,5.6,5.5,5.3,4.8,4.7,4.3,4.1,4,4,3.9,3.9,3.8,3.8,3.6,3.4,3.3,3.2,3.2,3.3,3.3,3.3,3.2,3.3,3.1,2.8,2.8,2.8,2.9,3.1,3.1,3,null,2.6,2.6,2.5,2.5,2.6,2.8,2.9,2.6,2.5], cpiCoreMoM:[0,0.2,0.2,0.8,0.7,0.8,0.4,0.1,0.3,0.7,0.6,0.6,0.6,0.5,0.3,0.5,0.5,0.7,0.4,0.5,0.6,0.4,0.3,0.4,0.4,0.5,0.3,0.5,0.4,0.2,0.2,0.2,0.3,0.3,0.3,0.3,0.4,0.4,0.4,0.3,0.1,0.1,0.2,0.3,0.3,0.3,0.3,0.2,0.4,0.3,0.1,0.2,0.1,0.2,0.3,0.3,0.2,null,0,0.2,0.3,0.2,0.2,0.4,0.2,0,0.2],
+    ppiYoY:[1.6,3,4.1,6.5,7,7.6,8,8.7,8.8,8.9,9.9,10,10.1,10.4,11.7,11.2,11.1,11.2,9.7,8.7,8.5,8.2,7.4,6.4,5.7,4.7,2.7,2.3,1.1,0.3,1.1,1.9,1.8,1.1,0.8,1.1,1,1.6,2,2.3,2.5,2.9,2.4,2.1,2.1,2.8,2.9,3.5,3.8,3.4,3.2,2.4,2.7,2.4,3.2,2.7,3,2.8,3.1,3.1,3.1,3.4,4.3,5.7,6,5.5,null], ppiMoM:[1,0.7,0.7,1,1,0.7,1,0.9,0.5,0.6,1.1,0.6,1,0.9,1.7,0.5,0.9,0.9,-0.3,-0.1,0.3,0.3,0.3,-0.3,0.4,0,-0.3,0.1,-0.2,0.1,0.6,0.7,0.2,-0.3,0.1,-0.1,0.3,0.5,0.1,0.5,0,0.4,0,0.3,0.3,0.3,0.1,0.4,0.6,0.2,-0.1,-0.3,0.3,0.2,0.8,-0.2,0.6,0.1,0.4,0.4,0.6,0.5,0.8,1.1,0.6,-0.3,null],
+    ppiCoreYoY:[1.9,2.3,3.1,4.8,5.3,5.6,6,6.2,6.1,6.2,7,7,6.9,6.7,7.1,6.8,6.8,6.4,5.8,5.6,5.6,5.5,4.9,4.7,4.4,4.5,3.7,3.4,2.9,2.9,2.9,2.9,2.9,2.8,2.5,2.7,2.7,2.8,2.9,3.2,3.4,3.4,3.5,3.5,3.4,3.6,3.6,3.6,3.5,3.6,3.5,2.7,2.7,2.6,2.9,3,3,3.5,3.6,3.4,3.5,3.5,3.6,4.4,5.1,5.1,null], ppiCoreMoM:[0.9,0.4,0.6,0.8,0.5,0.5,0.8,0.4,0.3,0.4,0.9,0.4,0.7,0.3,0.9,0.5,0.5,0.3,0.2,0.3,0.3,0.2,0.4,0.1,0.5,0.4,0.1,0.2,0,0.3,0.2,0.3,0.3,0,0.1,0.3,0.5,0.4,0.2,0.5,0.2,0.2,0.4,0.2,0.2,0.2,0.1,0.3,0.4,0.4,0.1,-0.2,0.1,0.1,0.7,0.3,0.2,0.6,0.3,0.1,0.5,0.5,0.2,0.5,0.8,0.1,null],
+    ismMfg:[58.7,60.8,64.7,60.7,61.2,60.6,59.5,59.9,61.1,60.8,61.1,58.8,57.6,58.6,57.1,55.4,56.1,53,52.8,52.8,50.9,50.2,49,48.4,47.4,47.7,46.3,47.1,46.9,46,46.4,47.6,49,46.7,46.7,47.1,49.1,47.8,50.3,49.2,48.7,48.5,46.8,47.2,47.2,46.5,48.4,49.3,50.9,50.3,49,48.7,48.5,49,48,48.7,49.1,48.7,48.2,47.9,52.6,52.4,52.7,52.7,54,53.3,55.6],
+    ismSvc:[58.7,55.3,63.7,62.7,64,60.1,64.1,61.7,61.9,66.7,69.1,62.3,59.9,56.5,58.3,57.1,55.9,55.3,56.7,56.9,56.7,54.4,56.5,49.2,55.2,55.1,51.2,51.9,50.3,53.9,52.7,54.5,53.6,51.8,52.7,50.5,53.4,52.6,51.4,49.4,53.8,48.8,51.4,51.5,54.9,56,52.1,54.1,52.8,53.5,50.8,51.6,49.9,50.8,50.1,52,50,52.4,52.6,54.4,53.8,56.1,54,53.6,54.5,54,54.1]}};
 
 </script>
 <script>
@@ -387,125 +421,147 @@ function renderPower(){
   document.getElementById('pkpis').innerHTML=head.concat(cards).join('');
 }
 
-// ================= 面板3 宏观 =================
+// ================= 面板① 宏观（中国 / 美国） =================
 function renderMacro(){
-  const Q=MACRO, M=Q.months;
+  const M=MACRO.months, CN=MACRO.cn, US=MACRO.us;
   document.getElementById('qrange').textContent=M[0]+' ~ '+M[M.length-1];
   const pct=v=>v==null?'-':(v>=0?'+':'')+(+v).toFixed(1)+'%';
-  const barCol=p=>p.value>=0?'rgba(229,72,77,.55)':'rgba(31,157,85,.55)';
+  const pct2=v=>v==null?'-':(v>=0?'+':'')+(+v).toFixed(2)+'%';
 
-  // —— PMI ——
-  mk('q_pmi',{
-    tooltip:{...baseTip,formatter:ps=>{
-      const i=ps[0].dataIndex, v=Q.pmi[i], pj=prevNN(Q.pmi,i);
-      let s='<b>'+ps[0].axisValue+'</b><br>'+ps[0].marker+'制造业PMI：<b>'+(v==null?'-':v.toFixed(1))+'</b><br>';
-      if(pj>=0&&v!=null)s+='<span style="color:#5d7aa6">环比</span>：'+((v-Q.pmi[pj])>=0?'+':'')+(v-Q.pmi[pj]).toFixed(1)+' pct<br>';
-      if(v!=null)s+='<span style="color:'+(v>=50?'#e5484d':'#1f9d55')+'">'+(v>=50?'位于扩张区间':'位于收缩区间')+'</span>';
-      return s;
-    }},
-    legend:{top:0,right:0,textStyle:{color:'#5d7aa6'},inactiveColor:'#b9c9e2',data:['制造业PMI']},
-    grid:{left:56,right:60,top:36,bottom:54},
-    xAxis:{type:'category',data:M,axisLine:axL,axisLabel:{...axT,hideOverlap:true,showMaxLabel:true}},
-    yAxis:{type:'value',scale:true,splitLine:splL,axisLabel:axT},
-    dataZoom:[{type:'inside'},{...dzBase}],
-    series:[{name:'制造业PMI',type:'line',smooth:true,symbol:'circle',symbolSize:4,connectNulls:false,data:Q.pmi,
-      lineStyle:{width:2.4,color:'#1f6feb'},itemStyle:{color:'#1f6feb'},
-      areaStyle:{color:'rgba(31,111,235,.06)'},
-      markLine:{silent:true,symbol:'none',lineStyle:{color:'#f85149',type:'dashed',width:1.4},
-        label:{show:true,position:'end',formatter:'荣枯线 50',color:'#f85149',fontSize:11},data:[{yAxis:50}]}}]
-  },macroCharts);
-
-  // —— 单序列图（同比／环比各自成图，右端标注最新值）——
-  // 末值标签用 markPoint 落在最后一个非空点上，避免最新月未发布时 endLabel 落空
-  function soloChart(id,label,arr,color,bucket){
-    const li=lastNN(arr);
+  // 双线图：同比 or 环比，主口径 + 核心/次级口径，右端标注最新值
+  function duoChart(id,defs,o){
+    o=o||{};
+    const lis=defs.map(d=>lastNN(d.data));
+    const vals=defs.map((d,i)=>lis[i]>=0?d.data[lis[i]]:null);
+    // 两个末值太接近时把第二个标签下移，避免文字重叠
+    const close=(vals[0]!=null&&vals[1]!=null&&Math.abs(vals[0]-vals[1])<0.15);
     mk(id,{
+      color:defs.map(d=>d.color),
       tooltip:{...baseTip,formatter:ps=>{
         const i=ps[0].dataIndex;
-        return '<b>'+ps[0].axisValue+'</b><br>'+ps[0].marker+label+'：<b>'+pct(arr[i])+'</b>';
+        let s='<b>'+ps[0].axisValue+'</b><br>';
+        defs.forEach(d=>{
+          s+='<span style="color:'+d.color+'">●</span> '+d.name+'：<b>'+pct2(d.data[i])+'</b><br>';
+        });
+        return s;
       }},
-      legend:{top:0,right:0,textStyle:{color:'#5d7aa6'},inactiveColor:'#b9c9e2',data:[label]},
-      grid:{left:56,right:62,top:36,bottom:54},
+      legend:{top:0,left:'center',textStyle:{color:'#5d7aa6'},inactiveColor:'#b9c9e2',data:defs.map(d=>d.name)},
+      grid:{left:56,right:74,top:36,bottom:54},
       xAxis:{type:'category',data:M,axisLine:axL,axisLabel:{...axT,hideOverlap:true,showMaxLabel:true}},
       yAxis:{type:'value',name:'%',scale:true,splitLine:splL,axisLabel:{...axT,formatter:'{value}%'},nameTextStyle:{color:'#5d7aa6',align:'right'}},
       dataZoom:[{type:'inside'},{...dzBase}],
-      series:[{name:label,type:'line',smooth:true,showSymbol:false,connectNulls:false,data:arr,
-        lineStyle:{width:2.4,color:color},itemStyle:{color:color},
-        markLine:{silent:true,symbol:'none',lineStyle:{color:'#b9c9e2',type:'dashed'},label:{show:false},data:[{yAxis:0}]},
-        ...(li>=0?{markPoint:{silent:true,symbol:'circle',symbolSize:7,itemStyle:{color:color},
-          label:{show:true,position:'right',distance:7,color:color,fontWeight:'bold',fontSize:12,
+      series:defs.map((d,i)=>({
+        name:d.name,type:'line',smooth:true,showSymbol:false,connectNulls:false,data:d.data,
+        lineStyle:{width:i===0?2.4:1.8,color:d.color},itemStyle:{color:d.color},
+        ...(i===0?{markLine:{silent:true,symbol:'none',lineStyle:{color:'#b9c9e2',type:'dashed'},label:{show:false},data:[{yAxis:0}]}}:{}),
+        ...(lis[i]>=0?{markPoint:{silent:true,symbol:'circle',symbolSize:6,itemStyle:{color:d.color},
+          label:{show:true,position:'right',distance:6,color:d.color,fontWeight:'bold',fontSize:12,
+            offset:(i===1&&close)?[0,(vals[1]>=vals[0]?-11:11)]:[0,0],
             formatter:p=>(p.value>=0?'+':'')+(+p.value).toFixed(2)+'%'},
-          data:[{coord:[M[li],arr[li]],value:arr[li]}]}}:{})
-      }]
-    },bucket||macroCharts);
-  }
-  soloChart('q_cpi_yoy','中国CPI当月同比',Q.cpiYoY,'#1f6feb');
-  soloChart('q_cpi_mom','中国CPI环比',Q.cpiMoM,'#8957e5');
-
-  // —— PPI（同比线＋环比柱，共用一个纵轴）——
-  function priceChart(id,name,yoyArr,momArr,color){
-    mk(id,{
-      tooltip:{...baseTip,formatter:ps=>{
-        const i=ps[0].dataIndex;
-        return '<b>'+ps[0].axisValue+'</b><br>'
-          +'<span style="color:'+color+'">●</span> '+name+'当月同比：<b>'+pct(yoyArr[i])+'</b><br>'
-          +'<span style="color:#8b98a8">▮</span> '+name+'环比：<b>'+pct(momArr[i])+'</b>';
-      }},
-      legend:{top:0,right:0,textStyle:{color:'#5d7aa6'},inactiveColor:'#b9c9e2',data:[name+'当月同比',name+'环比']},
-      grid:{left:56,right:18,top:36,bottom:54},
-      xAxis:{type:'category',data:M,axisLine:axL,axisLabel:{...axT,hideOverlap:true,showMaxLabel:true}},
-      yAxis:{type:'value',name:'%',scale:true,splitLine:splL,axisLabel:{...axT,formatter:'{value}%'},nameTextStyle:{color:'#5d7aa6',align:'right'}},
-      dataZoom:[{type:'inside'},{...dzBase}],
-      series:[
-        {name:name+'环比',type:'bar',barMaxWidth:14,data:momArr,itemStyle:{color:barCol}},
-        {name:name+'当月同比',type:'line',smooth:true,showSymbol:false,connectNulls:false,data:yoyArr,lineStyle:{width:2.4,color:color},itemStyle:{color:color},
-         markLine:{silent:true,symbol:'none',lineStyle:{color:'#b9c9e2',type:'dashed'},label:{show:false},data:[{yAxis:0}]}}
-      ]
+          data:[{coord:[M[lis[i]],d.data[lis[i]]],value:d.data[lis[i]]}]}}:{})
+      }))
     },macroCharts);
   }
-  priceChart('q_ppi','PPI',Q.ppiYoY,Q.ppiMoM,'#d29922');
 
-  // —— 剪刀差 ——
-  const gap=Q.cpiYoY.map((v,i)=>(v==null||Q.ppiYoY[i]==null)?null:+(v-Q.ppiYoY[i]).toFixed(2));
-  mk('q_gap',{
-    tooltip:{...baseTip,formatter:ps=>{
-      const i=ps[0].dataIndex;
-      return '<b>'+ps[0].axisValue+'</b><br>'
-        +'<span style="color:#1f6feb">●</span> CPI当月同比：<b>'+pct(Q.cpiYoY[i])+'</b><br>'
-        +'<span style="color:#d29922">●</span> PPI当月同比：<b>'+pct(Q.ppiYoY[i])+'</b><br>'
-        +'<span style="color:#5d7aa6">剪刀差(CPI-PPI)</span>：<b>'+(gap[i]==null?'-':(gap[i]>=0?'+':'')+gap[i].toFixed(1)+' pct')+'</b>';
-    }},
-    legend:{top:0,left:'center',textStyle:{color:'#5d7aa6'},inactiveColor:'#b9c9e2',data:['CPI当月同比','PPI当月同比','剪刀差']},
-    grid:{left:60,right:18,top:40,bottom:54},
-    xAxis:{type:'category',data:M,axisLine:axL,axisLabel:{...axT,hideOverlap:true,showMaxLabel:true}},
-    yAxis:{type:'value',name:'%',scale:true,splitLine:splL,axisLabel:{...axT,formatter:'{value}%'},nameTextStyle:{color:'#5d7aa6',align:'right'}},
-    dataZoom:[{type:'inside'},{...dzBase}],
-    series:[
-      {name:'剪刀差',type:'bar',barMaxWidth:16,data:gap,itemStyle:{color:p=>p.value>=0?'rgba(137,87,229,.35)':'rgba(22,163,163,.35)'}},
-      {name:'CPI当月同比',type:'line',smooth:true,showSymbol:false,connectNulls:false,data:Q.cpiYoY,lineStyle:{width:2.4,color:'#1f6feb'},itemStyle:{color:'#1f6feb'}},
-      {name:'PPI当月同比',type:'line',smooth:true,showSymbol:false,connectNulls:false,data:Q.ppiYoY,lineStyle:{width:2.4,color:'#d29922'},itemStyle:{color:'#d29922'},
-       markLine:{silent:true,symbol:'none',lineStyle:{color:'#b9c9e2',type:'dashed'},label:{show:false},data:[{yAxis:0}]}}
-    ]
-  },macroCharts);
+  // PMI 图：50 荣枯线
+  function pmiChart(id,defs){
+    const lis=defs.map(d=>lastNN(d.data));
+    const vals=defs.map((d,i)=>lis[i]>=0?d.data[lis[i]]:null);
+    const close=(defs.length>1&&vals[0]!=null&&vals[1]!=null&&Math.abs(vals[0]-vals[1])<1.2);
+    mk(id,{
+      color:defs.map(d=>d.color),
+      tooltip:{...baseTip,formatter:ps=>{
+        const i=ps[0].dataIndex;
+        let s='<b>'+ps[0].axisValue+'</b><br>';
+        defs.forEach(d=>{
+          const v=d.data[i];
+          s+='<span style="color:'+d.color+'">●</span> '+d.name+'：<b>'+(v==null?'-':v.toFixed(1))+'</b>'
+            +(v==null?'':' <span style="color:'+(v>=50?'#e5484d':'#1f9d55')+'">'+(v>=50?'扩张':'收缩')+'</span>')+'<br>';
+        });
+        return s;
+      }},
+      legend:{top:0,left:'center',textStyle:{color:'#5d7aa6'},inactiveColor:'#b9c9e2',data:defs.map(d=>d.name)},
+      grid:{left:56,right:78,top:36,bottom:54},
+      xAxis:{type:'category',data:M,axisLine:axL,axisLabel:{...axT,hideOverlap:true,showMaxLabel:true}},
+      yAxis:{type:'value',scale:true,splitLine:splL,axisLabel:axT},
+      dataZoom:[{type:'inside'},{...dzBase}],
+      series:defs.map((d,i)=>({
+        name:d.name,type:'line',smooth:true,showSymbol:false,connectNulls:false,data:d.data,
+        lineStyle:{width:2.2,color:d.color},itemStyle:{color:d.color},
+        ...(i===0?{areaStyle:{color:'rgba(31,111,235,.05)'},
+          markLine:{silent:true,symbol:'none',lineStyle:{color:'#f85149',type:'dashed',width:1.4},
+            label:{show:true,position:'end',formatter:'荣枯线 50',color:'#f85149',fontSize:11},data:[{yAxis:50}]}}:{}),
+        ...(lis[i]>=0?{markPoint:{silent:true,symbol:'circle',symbolSize:6,itemStyle:{color:d.color},
+          label:{show:true,position:'right',distance:6,color:d.color,fontWeight:'bold',fontSize:12,
+            offset:(i===1&&close)?[0,(vals[1]>=vals[0]?-11:11)]:[0,0],
+            formatter:p=>(+p.value).toFixed(1)},
+          data:[{coord:[M[lis[i]],d.data[lis[i]]],value:d.data[lis[i]]}]}}:{})
+      }))
+    },macroCharts);
+  }
+
+  const MAIN='#1f6feb', CORE='#8a93a3', PPIC='#d29922';
+
+  // —— 中国 ——
+  duoChart('cn_cpi_yoy',[
+    {name:'CPI:当月同比',data:CN.cpiYoY,color:MAIN},
+    {name:'核心CPI:当月同比',data:CN.cpiCoreYoY,color:CORE}]);
+  duoChart('cn_cpi_mom',[
+    {name:'CPI:环比',data:CN.cpiMoM,color:MAIN},
+    {name:'核心CPI:环比',data:CN.cpiCoreMoM,color:CORE}]);
+  duoChart('cn_ppi_yoy',[
+    {name:'PPI:当月同比',data:CN.ppiYoY,color:PPIC},
+    {name:'生活资料PPI:当月同比',data:CN.ppiLifeYoY,color:CORE}]);
+  duoChart('cn_ppi_mom',[
+    {name:'PPI:环比',data:CN.ppiMoM,color:PPIC},
+    {name:'生活资料PPI:环比',data:CN.ppiLifeMoM,color:CORE}]);
+  pmiChart('cn_pmi',[{name:'中国制造业PMI',data:CN.pmi,color:MAIN}]);
+
+  // —— 美国 ——
+  duoChart('us_cpi_yoy',[
+    {name:'CPI:同比(非季调)',data:US.cpiYoY,color:MAIN},
+    {name:'核心CPI:同比(非季调)',data:US.cpiCoreYoY,color:CORE}]);
+  duoChart('us_cpi_mom',[
+    {name:'CPI:环比(季调)',data:US.cpiMoM,color:MAIN},
+    {name:'核心CPI:环比(季调)',data:US.cpiCoreMoM,color:CORE}]);
+  duoChart('us_ppi_yoy',[
+    {name:'PPI最终需求:同比(非季调)',data:US.ppiYoY,color:PPIC},
+    {name:'核心PPI:同比(非季调)',data:US.ppiCoreYoY,color:CORE}]);
+  duoChart('us_ppi_mom',[
+    {name:'PPI最终需求:环比(季调)',data:US.ppiMoM,color:PPIC},
+    {name:'核心PPI:环比(季调)',data:US.ppiCoreMoM,color:CORE}]);
+  pmiChart('us_pmi',[
+    {name:'ISM制造业PMI',data:US.ismMfg,color:MAIN},
+    {name:'ISM服务业PMI',data:US.ismSvc,color:'#1f9d55'}]);
 
   // —— KPI ——
-  const pi=lastNN(Q.pmi), ci=lastNN(Q.cpiYoY), qi=lastNN(Q.ppiYoY);
-  const out=[];
-  if(pi>=0){const pj=prevNN(Q.pmi,pi), d=pj>=0?Q.pmi[pi]-Q.pmi[pj]:null;
-    out.push(`<div class="kpi"><div class="label">制造业PMI<span style="opacity:.7"> · ${M[pi]}</span></div>
-      <div class="val">${Q.pmi[pi].toFixed(1)}</div>
-      <div class="chg">${d==null?'<span style="color:#5d7aa6">环比 —</span>':chgSpan(d,'环比',' pct').replace('class="chg ','class="')} <span style="color:#cfe0f5">|</span> <span style="color:${Q.pmi[pi]>=50?'#e5484d':'#1f9d55'}">${Q.pmi[pi]>=50?'扩张区间':'收缩区间'}</span></div></div>`);}
-  if(ci>=0)out.push(`<div class="kpi"><div class="label">CPI 当月同比<span style="opacity:.7"> · ${M[ci]}</span></div>
-    <div class="val">${pct(Q.cpiYoY[ci])}</div>
-    <div class="chg">${flatSpan(Q.cpiMoM[ci],'环比')}</div></div>`);
-  if(qi>=0)out.push(`<div class="kpi"><div class="label">PPI 当月同比<span style="opacity:.7"> · ${M[qi]}</span></div>
-    <div class="val">${pct(Q.ppiYoY[qi])}</div>
-    <div class="chg">${flatSpan(Q.ppiMoM[qi],'环比')}</div></div>`);
-  if(ci>=0&&qi>=0){const g=Q.cpiYoY[ci]-Q.ppiYoY[qi];
-    out.push(`<div class="kpi"><div class="label">CPI-PPI 剪刀差<span style="opacity:.7"> · ${M[ci]}</span></div>
-      <div class="val">${(g>=0?'+':'')+g.toFixed(1)}<span class="unit">pct</span></div>
-      <div class="chg"><span style="color:#5d7aa6">${g>=0?'CPI高于PPI':'PPI高于CPI'}</span></div></div>`);}
-  document.getElementById('qkpis').innerHTML=out.join('');
+  // 物价类：主值取同比，副行给同月环比；PMI 类：主值取指数，副行给环比 pct 与扩张/收缩
+  function priceKpi(title,yoyArr,momArr){
+    const i=lastNN(yoyArr); if(i<0)return '';
+    return `<div class="kpi"><div class="label">${title}<span style="opacity:.7"> · ${M[i]}</span></div>
+      <div class="val">${pct(yoyArr[i])}</div>
+      <div class="chg">${flatSpan(momArr[i],'环比')}</div></div>`;
+  }
+  function pmiKpi(title,arr){
+    const i=lastNN(arr); if(i<0)return '';
+    const j=prevNN(arr,i), d=j>=0?arr[i]-arr[j]:null;
+    return `<div class="kpi"><div class="label">${title}<span style="opacity:.7"> · ${M[i]}</span></div>
+      <div class="val">${arr[i].toFixed(1)}</div>
+      <div class="chg">${d==null?'<span style="color:#5d7aa6">环比 —</span>':chgSpan(d,'环比',' pct').replace('class="chg ','class="')} <span style="color:#cfe0f5">|</span> <span style="color:${arr[i]>=50?'#e5484d':'#1f9d55'}">${arr[i]>=50?'扩张区间':'收缩区间'}</span></div></div>`;
+  }
+  document.getElementById('cn_kpis').innerHTML=[
+    priceKpi('中国CPI 当月同比',CN.cpiYoY,CN.cpiMoM),
+    priceKpi('中国核心CPI 当月同比',CN.cpiCoreYoY,CN.cpiCoreMoM),
+    priceKpi('中国PPI 当月同比',CN.ppiYoY,CN.ppiMoM),
+    pmiKpi('中国制造业PMI',CN.pmi)
+  ].join('');
+  document.getElementById('us_kpis').innerHTML=[
+    priceKpi('美国CPI 同比',US.cpiYoY,US.cpiMoM),
+    priceKpi('美国核心CPI 同比',US.cpiCoreYoY,US.cpiCoreMoM),
+    priceKpi('美国PPI 同比',US.ppiYoY,US.ppiMoM),
+    pmiKpi('美国ISM制造业PMI',US.ismMfg),
+    pmiKpi('美国ISM服务业PMI',US.ismSvc)
+  ].join('');
 }
 
 // ================= 标签切换 =================
